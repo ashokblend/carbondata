@@ -63,6 +63,11 @@ public class BlockMetadata implements Serializable {
      * Description of columns in this file
      */
     private List<ColumnSchema> columnInTable;
+    
+    /**
+     * to check whether table data chunk will be in memory or file based
+     */
+    private boolean isFileBasedStorage=true;
 
     /**
      * @return the versionId
@@ -147,5 +152,19 @@ public class BlockMetadata implements Serializable {
     public void setColumnInTable(List<ColumnSchema> columnInTable) {
         this.columnInTable = columnInTable;
     }
+
+	/**
+	 * @return the isFileBasedStorage
+	 */
+	public boolean isFileBasedStorage() {
+		return isFileBasedStorage;
+	}
+
+	/**
+	 * @param isFileBasedStorage the isFileBasedStorage to set
+	 */
+	public void setFileBasedStorage(boolean isFileBasedStorage) {
+		this.isFileBasedStorage = isFileBasedStorage;
+	}
 
 }

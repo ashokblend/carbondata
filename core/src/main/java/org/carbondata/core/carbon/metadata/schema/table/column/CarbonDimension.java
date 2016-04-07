@@ -66,10 +66,16 @@ public class CarbonDimension implements Serializable {
      * when older segment does not have particular column
      */
     protected byte[] defaultValue;
+    
+    /**
+     * ordinal of column in table
+     */
+    protected int tableOrdinal;
 
-    public CarbonDimension(ColumnSchema columnSchema, int ordinal) {
+    public CarbonDimension(ColumnSchema columnSchema, int ordinal,int tableOrdinal) {
         this.columnSchema = columnSchema;
         this.ordinal = ordinal;
+        this.tableOrdinal=tableOrdinal;
     }
 
     /**
@@ -213,6 +219,13 @@ public class CarbonDimension implements Serializable {
 	 */
 	public void setDefaultValue(byte[] defaultValue) {
 		this.defaultValue = defaultValue;
+	}
+
+	/**
+	 * @return the tableOrdinal
+	 */
+	public int getTableOrdinal() {
+		return tableOrdinal;
 	}
 
 	/**

@@ -22,7 +22,7 @@ package org.carbondata.core.carbon.metadata.leafnode.datachunk;
 import org.roaringbitmap.RoaringBitmap;
 
 /**
- * Class to handle space data with nulls
+ * information about presence of values in each row of the column chunk
  */
 public class PresenceMeta {
 

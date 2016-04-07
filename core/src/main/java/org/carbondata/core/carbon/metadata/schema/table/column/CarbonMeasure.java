@@ -58,8 +58,8 @@ public class CarbonMeasure extends CarbonDimension {
         this.minValue = minValue;
     }
 
-    public CarbonMeasure(ColumnSchema columnSchema, int ordinal) {
-        super(columnSchema, ordinal);
+    public CarbonMeasure(ColumnSchema columnSchema, int ordinal,int tableOrdinal) {
+        super(columnSchema, ordinal,tableOrdinal);
         this.scale = columnSchema.getScale();
         this.precision = columnSchema.getPrecision();
     }
