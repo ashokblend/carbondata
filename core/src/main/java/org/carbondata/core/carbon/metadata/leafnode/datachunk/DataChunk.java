@@ -24,6 +24,7 @@ import java.util.List;
 import org.carbondata.core.carbon.metadata.encoder.Encoding;
 import org.carbondata.core.carbon.metadata.leafnode.compressor.ChunkCompressorMeta;
 import org.carbondata.core.carbon.metadata.leafnode.sort.SortState;
+import org.carbondata.core.metadata.ValueEncoderMeta;
 
 /**
  * Class holds the information about the data chunk metadata
@@ -106,11 +107,12 @@ public class DataChunk implements Serializable {
      * The List of encoders overriden at node level
      */
     private List<Encoding> encodingList;
-
+    
     /**
-     * extra information required by encoders
+     * value encoder meta which will holds the information 
+     * about max, min, decimal length, type 
      */
-    private List<byte[]> encoderMeta;
+    private List<ValueEncoderMeta> valueEncoderMetaList;
 
     /**
      * @return the chunkCompressionMeta
@@ -308,18 +310,18 @@ public class DataChunk implements Serializable {
         this.encodingList = encodingList;
     }
 
-    /**
-     * @return the encoderMeta
-     */
-    public List<byte[]> getEncoderMeta() {
-        return encoderMeta;
-    }
+	/**
+	 * @return the valueEncoderMeta
+	 */
+	public List<ValueEncoderMeta> getValueEncoderMeta() {
+		return valueEncoderMetaList;
+	}
 
-    /**
-     * @param encoderMeta the encoderMeta to set
-     */
-    public void setEncoderMeta(List<byte[]> encoderMeta) {
-        this.encoderMeta = encoderMeta;
-    }
+	/**
+	 * @param valueEncoderMeta the valueEncoderMeta to set
+	 */
+	public void setValueEncoderMeta(List<ValueEncoderMeta> valueEncoderMetaList) {
+		this.valueEncoderMetaList = valueEncoderMetaList;
+	}
 
 }

@@ -801,7 +801,7 @@ public final class ValueCompressionUtil {
         return getValueCompressionModel(metaDataModel);
     }
 
-    private static ValueCompressionModel getValueCompressionModel(
+    public static ValueCompressionModel getValueCompressionModel(
             MeasureMetaDataModel measureMDMdl) {
         int measureCount = measureMDMdl.getMeasureCount();
         Object[] minValue = measureMDMdl.getMinValue();

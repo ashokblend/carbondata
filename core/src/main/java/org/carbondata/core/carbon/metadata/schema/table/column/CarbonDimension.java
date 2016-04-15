@@ -65,7 +65,7 @@ public class CarbonDimension implements Serializable {
      * default value for in case of restructuring will be used 
      * when older segment does not have particular column
      */
-    protected byte[] defaultValue;
+    protected Object defaultValue;
     
     /**
      * ordinal of column in table
@@ -196,7 +196,7 @@ public class CarbonDimension implements Serializable {
     /**
      * @return row group id if it is row based
      */
-    public int columnGroupId() {
+    public int rowGroupId() {
         return columnSchema.getRowGroupId();
     }
 
@@ -210,7 +210,7 @@ public class CarbonDimension implements Serializable {
     /**
 	 * @return the defaultValue
 	 */
-	public byte[] getDefaultValue() {
+	public Object getDefaultValue() {
 		return defaultValue;
 	}
 
@@ -226,6 +226,13 @@ public class CarbonDimension implements Serializable {
 	 */
 	public int getTableOrdinal() {
 		return tableOrdinal;
+	}
+	
+	/**
+	 * @return whether its a columnar storage column or not
+	 */
+	public boolean isColumnar() {
+		return columnSchema.isColumnar();
 	}
 
 	/**

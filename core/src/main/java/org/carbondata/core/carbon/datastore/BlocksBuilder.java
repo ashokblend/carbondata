@@ -16,19 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.carbondata.core.carbon.metadata.datatype;
+package org.carbondata.core.carbon.datastore;
 
-public enum DataType {
 
-    STRING,
-    INT,
-    LONG,
-    DOUBLE,
-    DECIMAL,
-    TIMESTAMP,
-    ARRAY,
-    STRUCT,
-    MAP,
-    CUSTOM;
+/**
+ * Below class to store blocks in some data structure  
+ *
+ */
+public interface BlocksBuilder {
+
+	 /**
+     * Below method will be used to store the leaf collection in some data structure
+     *
+     */
+    void build(BlocksBuilderInfos blocksBuilderInfos);
+
+    /**
+     * below method to get the first data block 
+     * @return data block 
+     */
+    DataBlock get();
     
 }
