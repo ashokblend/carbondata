@@ -24,104 +24,100 @@ import org.carbondata.core.carbon.datastore.chunk.DimensionChunkAttributes;
 import org.carbondata.core.carbon.datastore.chunk.DimensionColumnDataChunk;
 
 /**
- * This class is holder of the dimension column chunk data 
- * of the fixed length key size 
+ * This class is holder of the dimension column chunk data
+ * of the fixed length key size
  */
-public class FixedLengthDimensionDataChunk implements DimensionColumnDataChunk{
+public class FixedLengthDimensionDataChunk implements DimensionColumnDataChunk {
 
-	/**
-	 * dimension chunk attributes
-	 */
-	private DimensionChunkAttributes chunkAttributes;
+    /**
+     * dimension chunk attributes
+     */
+    private DimensionChunkAttributes chunkAttributes;
 
-	/**
-	 * data chunks
-	 */
-	private byte[] dataChunk;
-	
-	/**
-	 * Constructor for this class
-	 * @param dataChunk
-	 * 			data chunk 
-	 * @param chunkAttributes
-	 * 			chunk attributes
-	 */
-	public FixedLengthDimensionDataChunk(byte[] dataChunk,DimensionChunkAttributes chunkAttributes) {
-		this.chunkAttributes=chunkAttributes;
-		this.dataChunk=dataChunk;
-	}
-	
-	/** 
-	 * Below method will be used to fill the data based on offset and row id
-	 * @param data
-	 * 			data to filed
-	 * @param offset
-	 * 			offset from which data need to be filed
-	 * @param rowId
-	 * 			row id of the chunk  
-	 * @return how many bytes was copied 
-	 * 
-	 */
-	@Override
-	public int fillChunkData(byte[] data, int offset,int index) {
-		if(chunkAttributes.getInvertedIndexes()!=null)
-		{
-			index=chunkAttributes.getInvertedIndexesReverse()[index];
-		}
-		System.arraycopy(data, offset, dataChunk, index, chunkAttributes.getEachValueSize());
-		return chunkAttributes.getEachValueSize();
-	}
+    /**
+     * data chunks
+     */
+    private byte[] dataChunk;
 
-	/**
-	 * Below method to get  the data based in row id
-	 * @param row id
-	 * 			row id of the data 
-	 * @return chunk
-	 */
-	@Override
-	public byte[] getChunkData(int index) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * Constructor for this class
+     *
+     * @param dataChunk       data chunk
+     * @param chunkAttributes chunk attributes
+     */
+    public FixedLengthDimensionDataChunk(byte[] dataChunk,
+            DimensionChunkAttributes chunkAttributes) {
+        this.chunkAttributes = chunkAttributes;
+        this.dataChunk = dataChunk;
+    }
 
+    /**
+     * Below method will be used to fill the data based on offset and row id
+     *
+     * @param data   data to filed
+     * @param offset offset from which data need to be filed
+     * @param rowId  row id of the chunk
+     * @return how many bytes was copied
+     */
+    @Override public int fillChunkData(byte[] data, int offset, int index) {
+        if (chunkAttributes.getInvertedIndexes() != null) {
+            index = chunkAttributes.getInvertedIndexesReverse()[index];
+        }
+        System.arraycopy(data, offset, dataChunk, index, chunkAttributes.getEachValueSize());
+        return chunkAttributes.getEachValueSize();
+    }
 
-	/**
-	 * below method will be used to get the surrogate key based on row id
-	 * This will be used for dimension  data aggregation 
-	 * This can be used only for fixed length dimension column
-	 * chunk as key generator was used to generate the key 
-	 * @param rowId
-	 * @return surrogate key 
-	 */
-	@Override
-	public int getSurrogate(int columnIndex) {
-		byte[] actual = new byte[4];
+    /**
+     * Below method to get  the data based in row id
+     *
+     * @param row id
+     *            row id of the data
+     * @return chunk
+     */
+    @Override public byte[] getChunkData(int index) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * below method will be used to get the surrogate key based on row id
+     * This will be used for dimension  data aggregation
+     * This can be used only for fixed length dimension column
+     * chunk as key generator was used to generate the key
+     *
+     * @param rowId
+     * @return surrogate key
+     */
+    @Override public int getSurrogate(int columnIndex) {
+        byte[] actual = new byte[4];
         int startIndex;
         if (null != chunkAttributes.getInvertedIndexes()) {
-            startIndex = chunkAttributes.getInvertedIndexesReverse()[columnIndex]
-                    * chunkAttributes.getEachValueSize();
+            startIndex = chunkAttributes.getInvertedIndexesReverse()[columnIndex] * chunkAttributes
+                    .getEachValueSize();
         } else {
             startIndex = columnIndex * chunkAttributes.getEachValueSize();
         }
         int destPos = 4 - chunkAttributes.getEachValueSize();
         System.arraycopy(dataChunk, startIndex, actual, destPos,
-        		chunkAttributes.getEachValueSize());
+                chunkAttributes.getEachValueSize());
         return ByteBuffer.wrap(actual).getInt();
-	}
-	/**
-	 * Below method will be used get the chunk attributes
-	 * @return chunk attributes
-	 */
-	@Override
-	public DimensionChunkAttributes getAttributes() {
-		return chunkAttributes;
-	}
-	/**
-	 * Method to get the complete chunk
-	 * @return complete chunk
-	 */
-	@Override
-	public byte[] getChunkData() {
-		return dataChunk;
-	}
+    }
+
+    /**
+     * Below method will be used get the chunk attributes
+     *
+     * @return chunk attributes
+     */
+    @Override public DimensionChunkAttributes getAttributes() {
+        return chunkAttributes;
+    }
+
+    /**
+     * Method to get the complete chunk
+     *
+     * @return complete chunk
+     */
+    @Override public byte[] getChunkData() {
+        return dataChunk;
+    }
 }

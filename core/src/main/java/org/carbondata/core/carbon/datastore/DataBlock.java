@@ -25,96 +25,82 @@ import org.carbondata.core.datastorage.store.FileHolder;
 /**
  * Data block interface which will have all the method required during query
  * scanning
- * 
  */
 public interface DataBlock {
 
-	/**
-	 * Method to get the next block this can be used while scanning when
-	 * iterator of this class can be used iterate over blocks
-	 * 
-	 * @return next block
-	 */
-	DataBlock getNextBlock();
+    /**
+     * Method to get the next block this can be used while scanning when
+     * iterator of this class can be used iterate over blocks
+     *
+     * @return next block
+     */
+    DataBlock getNextBlock();
 
-	/**
-	 * to get the number of keys tuples present in the block
-	 * 
-	 * @return number of keys in the block
-	 */
-	int blockSize();
+    /**
+     * to get the number of keys tuples present in the block
+     *
+     * @return number of keys in the block
+     */
+    int blockSize();
 
-	/**
-	 * Method can be used to get the block index .This can be used when multiple
-	 * thread can be used scan group of blocks in that can we can assign the
-	 * some of the blocks to one thread and some to other
-	 * 
-	 * @return block number
-	 */
-	long getBlockNumber();
+    /**
+     * Method can be used to get the block index .This can be used when multiple
+     * thread can be used scan group of blocks in that can we can assign the
+     * some of the blocks to one thread and some to other
+     *
+     * @return block number
+     */
+    long getBlockNumber();
 
-	/**
-	 * This method will be used to get the max value of all the columns this can
-	 * be used in case of filter query
-	 * 
-	 * @param max
-	 *            value of all the columns
-	 */
-	byte[][] getColumnsMaxValue();
+    /**
+     * This method will be used to get the max value of all the columns this can
+     * be used in case of filter query
+     *
+     * @param max value of all the columns
+     */
+    byte[][] getColumnsMaxValue();
 
-	/**
-	 * This method will be used to get the max value of all the columns this can
-	 * be used in case of filter query
-	 * 
-	 * @param max
-	 *            value of all the columns
-	 */
-	byte[][] getColumnsMinValue();
+    /**
+     * This method will be used to get the max value of all the columns this can
+     * be used in case of filter query
+     *
+     * @param max value of all the columns
+     */
+    byte[][] getColumnsMinValue();
 
-	/**
-	 * Below method will be used to get the dimension chunks
-	 * 
-	 * @param fileReader
-	 *            file reader to read the chunks from file
-	 * @param blockIndexes
-	 *            indexes of the blocks need to be read
-	 * @return dimension data chunks
-	 */
-	DimensionColumnDataChunk[] getDimensionChunks(FileHolder fileReader,
-			int[] blockIndexes);
+    /**
+     * Below method will be used to get the dimension chunks
+     *
+     * @param fileReader   file reader to read the chunks from file
+     * @param blockIndexes indexes of the blocks need to be read
+     * @return dimension data chunks
+     */
+    DimensionColumnDataChunk[] getDimensionChunks(FileHolder fileReader, int[] blockIndexes);
 
-	/**
-	 * Below method will be used to get the dimension chunk
-	 * 
-	 * @param fileReader
-	 *            file reader to read the chunk from file
-	 * @param blockIndex
-	 *            block index to be read
-	 * @return dimension data chunk
-	 */
-	DimensionColumnDataChunk getDimensionChunk(FileHolder fileReader,
-			int blockIndexes);
+    /**
+     * Below method will be used to get the dimension chunk
+     *
+     * @param fileReader file reader to read the chunk from file
+     * @param blockIndex block index to be read
+     * @return dimension data chunk
+     */
+    DimensionColumnDataChunk getDimensionChunk(FileHolder fileReader, int blockIndexes);
 
-	/**
-	 * Below method will be used to get the measure chunk
-	 * 
-	 * @param fileReader
-	 *            file reader to read the chunk from file
-	 * @param blockIndexes
-	 *            block indexes to be read from file
-	 * @return measure column data chunk
-	 */
-	MeasureColumnDataChunk[] getMeasureChunks(FileHolder fileReader,
-			int[] blockIndexes);
+    /**
+     * Below method will be used to get the measure chunk
+     *
+     * @param fileReader   file reader to read the chunk from file
+     * @param blockIndexes block indexes to be read from file
+     * @return measure column data chunk
+     */
+    MeasureColumnDataChunk[] getMeasureChunks(FileHolder fileReader, int[] blockIndexes);
 
-	/**
-	 * Below method will be used to read the measure chunk
-	 * 
-	 * @param fileReader
-	 *            file read to read the file chunk
-	 * @param blockIndex
-	 *            block index to be read from file
-	 * @return measure data chunk
-	 */
-	MeasureColumnDataChunk getMeasureChunk(FileHolder fileReader, int blockIndex);
+    /**
+     * Below method will be used to read the measure chunk
+     *
+     * @param fileReader file read to read the file chunk
+     * @param blockIndex block index to be read from file
+     * @return measure data chunk
+     */
+    MeasureColumnDataChunk getMeasureChunk(FileHolder fileReader, int blockIndex);
 }

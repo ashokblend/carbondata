@@ -55,74 +55,58 @@ public class CarbonDimension implements Serializable {
      * table ordinal
      */
     protected int ordinal;
-    
+
     /**
      * List of child dimension for complex type
      */
     private List<CarbonDimension> listOfChildDimensions;
-    
+
     /**
-     * default value for in case of restructuring will be used 
+     * default value for in case of restructuring will be used
      * when older segment does not have particular column
      */
     protected Object defaultValue;
-    
-    /**
-     * ordinal of column in table
-     */
-    protected int tableOrdinal;
 
-    public CarbonDimension(ColumnSchema columnSchema, int ordinal,int tableOrdinal) {
+    public CarbonDimension(ColumnSchema columnSchema, int ordinal) {
         this.columnSchema = columnSchema;
         this.ordinal = ordinal;
-        this.tableOrdinal=tableOrdinal;
     }
 
     /**
      * this method will initialize list based on number of child dimensions Count
      */
-    public void initializeChildDimensionsList(int childDimensions)
-    {
+    public void initializeChildDimensionsList(int childDimensions) {
         listOfChildDimensions = new ArrayList<CarbonDimension>(childDimensions);
     }
-    
+
     /**
      * @return convertedType
      */
-    public ConvertedType getConvertedType()
-    {
-    	return columnSchema.getConvertedType();
+    public ConvertedType getConvertedType() {
+        return columnSchema.getConvertedType();
     }
-    
+
     /**
      * @return number of children for complex type
      */
-    public int getNumberOfChild()
-    {
-    	return columnSchema.getNumberOfChild();
-    }
-    
-    /**
-     * @return columnar or row based
-     */
-    public boolean isColumnar()
-    {
-    	return columnSchema.isColumnar();
+    public int getNumberOfChild() {
+        return columnSchema.getNumberOfChild();
     }
 
     /**
      * @return list of children dims for complex type
      */
     public List<CarbonDimension> getListOfChildDimensions() {
-      return listOfChildDimensions;
+        return listOfChildDimensions;
     }
-    
+
     /**
      * @param listOfChildDimensions
      */
     public void setListOfChildDimensions(List<CarbonDimension> listOfChildDimensions) {
-      this.listOfChildDimensions = listOfChildDimensions;
+        this.listOfChildDimensions = listOfChildDimensions;
     }
+
     /**
      * @return column unique id
      */
@@ -208,34 +192,27 @@ public class CarbonDimension implements Serializable {
     }
 
     /**
-	 * @return the defaultValue
-	 */
-	public Object getDefaultValue() {
-		return defaultValue;
-	}
+     * @return the defaultValue
+     */
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
 
-	/**
-	 * @param defaultValue the defaultValue to set
-	 */
-	public void setDefaultValue(byte[] defaultValue) {
-		this.defaultValue = defaultValue;
-	}
+    /**
+     * @param defaultValue the defaultValue to set
+     */
+    public void setDefaultValue(byte[] defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
-	/**
-	 * @return the tableOrdinal
-	 */
-	public int getTableOrdinal() {
-		return tableOrdinal;
-	}
-	
-	/**
-	 * @return whether its a columnar storage column or not
-	 */
-	public boolean isColumnar() {
-		return columnSchema.isColumnar();
-	}
+    /**
+     * @return whether its a columnar storage column or not
+     */
+    public boolean isColumnar() {
+        return columnSchema.isColumnar();
+    }
 
-	/**
+    /**
      * to generate the hash code for this class
      */
     @Override public int hashCode() {

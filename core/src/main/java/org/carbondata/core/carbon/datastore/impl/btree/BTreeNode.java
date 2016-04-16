@@ -22,38 +22,37 @@ import org.carbondata.core.carbon.datastore.DataBlock;
 import org.carbondata.core.carbon.datastore.IndexKey;
 
 /**
- *
- * Interafce for btree node 
+ * Interafce for btree node
  */
 public interface BTreeNode extends DataBlock {
 
-	/**
+    /**
      * below method will return the one node indexes
      *
      * @return node entry array
      */
-     IndexKey[] getNodeKeys();
-    
+    IndexKey[] getNodeKeys();
+
     /**
      * to check whether node in a btree is a leaf node or not
      *
      * @return leaf node or not
      */
-     boolean isLeafNode();
+    boolean isLeafNode();
 
     /**
      * below method will be used to set the children of intermediate node
      *
      * @param children array
      */
-     void setChildren(BTreeNode[] children);
+    void setChildren(BTreeNode[] children);
 
     /**
      * below method will used to set the next node
      *
      * @param nextNode
      */
-     void setNextNode(BTreeNode nextNode);
+    void setNextNode(BTreeNode nextNode);
 
     /**
      * Below method is to get the children based on index
@@ -61,12 +60,12 @@ public interface BTreeNode extends DataBlock {
      * @param index children index
      * @return btree node
      */
-     BTreeNode getChild(int index);
+    BTreeNode getChild(int index);
 
     /**
      * below method to set the node entry
      *
      * @param key node entry
      */
-     void setKey(IndexKey key);
+    void setKey(IndexKey key);
 }

@@ -38,70 +38,68 @@ import org.carbondata.query.util.DataFileMetadataConverter;
  */
 public class TableSegment {
 
-	private static final LogService LOGGER = LogServiceFactory
-			.getLogService(TableBlock.class.getName());
-	/**
-	 * vo class which will hold the RS information of the block
-	 */
-	private SegmentProperties segmentProperties;
+    private static final LogService LOGGER =
+            LogServiceFactory.getLogService(TableBlock.class.getName());
+    /**
+     * vo class which will hold the RS information of the block
+     */
+    private SegmentProperties segmentProperties;
 
-	/**
-	 * to store the segment meta data in some data structure
-	 */
-	private DataBlock dataBlock;
+    /**
+     * to store the segment meta data in some data structure
+     */
+    private DataBlock dataBlock;
 
-	/**
-	 * Below method is store the blocks in some data structure
-	 *
-	 * @param blockInfo
-	 *            block detail
-	 */
-	public void loadCarbonTableBlock(List<TableBlockInfos> blockInfoList) {
+    /**
+     * Below method is store the blocks in some data structure
+     *
+     * @param blockInfo block detail
+     */
+    public void loadCarbonTableBlock(List<TableBlockInfos> blockInfoList) {
 
-		DataFileMetadataConverter converter = new DataFileMetadataConverter();
-		// get the data file metadata from thrift
-		List<DataFileMetadata> dataMetadataList = new ArrayList<DataFileMetadata>(
-				blockInfoList.size());
-		DataFileMetadata dataFileMetadata = null;
-		try {
-			for (TableBlockInfos blockInfo : blockInfoList) {
-				dataFileMetadata = converter.readDataFileMetadata(
-						blockInfo.getFilePath(), blockInfo.getBlockOffset());
-				dataMetadataList.add(dataFileMetadata);
-			}
-		} catch (IOException e) {
-			LOGGER.error(CarbonCoreLogEvent.UNIBI_CARBONCORE_MSG, e
-					+ "Unable to read the block metadata from file");
-			return;
-		}
-		// create a metadata details
-		// this will be useful in query handling
-		// all the data file metadata will have common segment properties we
-		// can use first one to get create the segment properties
-		segmentProperties = new SegmentProperties(dataMetadataList.get(0)
-				.getColumnInTable(), dataMetadataList.get(0).getSegmentInfo()
-				.getColumnCardinality());
-		// create a segment builder info
-		BlocksBuilderInfos segmentBuilderInfos = new BlocksBuilderInfos();
-		segmentBuilderInfos.setDataFileMetadataList(dataMetadataList);
-		BlocksBuilder blocksBuilder = new DriverBtreeFormatBuilder();
-		// load the metadata
-		blocksBuilder.build(segmentBuilderInfos);
-		dataBlock = blocksBuilder.get();
-	}
+        DataFileMetadataConverter converter = new DataFileMetadataConverter();
+        // get the data file metadata from thrift
+        List<DataFileMetadata> dataMetadataList =
+                new ArrayList<DataFileMetadata>(blockInfoList.size());
+        DataFileMetadata dataFileMetadata = null;
+        try {
+            for (TableBlockInfos blockInfo : blockInfoList) {
+                dataFileMetadata = converter
+                        .readDataFileMetadata(blockInfo.getFilePath(), blockInfo.getBlockOffset());
+                dataMetadataList.add(dataFileMetadata);
+            }
+        } catch (IOException e) {
+            LOGGER.error(CarbonCoreLogEvent.UNIBI_CARBONCORE_MSG,
+                    e + "Unable to read the block metadata from file");
+            return;
+        }
+        // create a metadata details
+        // this will be useful in query handling
+        // all the data file metadata will have common segment properties we
+        // can use first one to get create the segment properties
+        segmentProperties = new SegmentProperties(dataMetadataList.get(0).getColumnInTable(),
+                dataMetadataList.get(0).getSegmentInfo().getColumnCardinality());
+        // create a segment builder info
+        BlocksBuilderInfos segmentBuilderInfos = new BlocksBuilderInfos();
+        segmentBuilderInfos.setDataFileMetadataList(dataMetadataList);
+        BlocksBuilder blocksBuilder = new DriverBtreeFormatBuilder();
+        // load the metadata
+        blocksBuilder.build(segmentBuilderInfos);
+        dataBlock = blocksBuilder.get();
+    }
 
-	/**
-	 * @return the segmentProperties
-	 */
-	public SegmentProperties getSegmentProperties() {
-		return segmentProperties;
-	}
+    /**
+     * @return the segmentProperties
+     */
+    public SegmentProperties getSegmentProperties() {
+        return segmentProperties;
+    }
 
-	/**
-	 * @return the dataBlock
-	 */
-	public DataBlock getDataBlock() {
-		return dataBlock;
-	}
+    /**
+     * @return the dataBlock
+     */
+    public DataBlock getDataBlock() {
+        return dataBlock;
+    }
 
 }

@@ -37,86 +37,83 @@ import org.carbondata.query.util.DataFileMetadataConverter;
  */
 public class TableBlock {
 
-	private static final LogService LOGGER = LogServiceFactory
-			.getLogService(TableBlock.class.getName());
-	/**
-	 * vo class which will hold the RS information of the block
-	 */
-	private SegmentProperties segmentProperties;
+    private static final LogService LOGGER =
+            LogServiceFactory.getLogService(TableBlock.class.getName());
+    /**
+     * vo class which will hold the RS information of the block
+     */
+    private SegmentProperties segmentProperties;
 
-	/**
-	 * data block
-	 */
-	private DataBlock dataBlock;
+    /**
+     * data block
+     */
+    private DataBlock dataBlock;
 
-	/**
-	 * total number of row present in the block
-	 */
-	private long totalNumberOfRows;
+    /**
+     * total number of row present in the block
+     */
+    private long totalNumberOfRows;
 
-	/**
-	 * Below method is store the blocks in some data structure
-	 *
-	 * @param blockInfo
-	 *            block detail
-	 */
-	public void loadCarbonTableBlock(TableBlockInfos blockInfo) {
+    /**
+     * Below method is store the blocks in some data structure
+     *
+     * @param blockInfo block detail
+     */
+    public void loadCarbonTableBlock(TableBlockInfos blockInfo) {
 
-		DataFileMetadataConverter converter = new DataFileMetadataConverter();
-		// get the data file metadata from thrift
-		DataFileMetadata dataFileMetadata = null;
-		try {
-			dataFileMetadata = converter.readDataFileMetadata(
-					blockInfo.getFilePath(), blockInfo.getBlockOffset());
-		} catch (IOException e) {
-			LOGGER.error(CarbonCoreLogEvent.UNIBI_CARBONCORE_MSG, e
-					+ "Unable to read the block metadata from file");
-			return;
-		}
-		// create a metadata details
-		// this will be useful in query handling
-		segmentProperties = new SegmentProperties(
-				dataFileMetadata.getColumnInTable(), dataFileMetadata
-						.getSegmentInfo().getColumnCardinality());
-		// create a segment builder info
-		BlocksBuilderInfos segmentBuilderInfos = new BlocksBuilderInfos();
-		BlocksBuilder blocksBuilder = new BlockBtreeFormatBuilder();
-		segmentBuilderInfos.setDataFileMetadataList(Arrays
-				.asList(new DataFileMetadata[] { dataFileMetadata }));
-		segmentBuilderInfos.setEachDimensionBlockSize(segmentProperties
-				.getDimensionColumnsValueSize());
-		segmentBuilderInfos.setFilePath(blockInfo.getFilePath());
-		// load the metadata
-		blocksBuilder.build(segmentBuilderInfos);
-		dataBlock = blocksBuilder.get();
-	}
+        DataFileMetadataConverter converter = new DataFileMetadataConverter();
+        // get the data file metadata from thrift
+        DataFileMetadata dataFileMetadata = null;
+        try {
+            dataFileMetadata = converter
+                    .readDataFileMetadata(blockInfo.getFilePath(), blockInfo.getBlockOffset());
+        } catch (IOException e) {
+            LOGGER.error(CarbonCoreLogEvent.UNIBI_CARBONCORE_MSG,
+                    e + "Unable to read the block metadata from file");
+            return;
+        }
+        // create a metadata details
+        // this will be useful in query handling
+        segmentProperties = new SegmentProperties(dataFileMetadata.getColumnInTable(),
+                dataFileMetadata.getSegmentInfo().getColumnCardinality());
+        // create a segment builder info
+        BlocksBuilderInfos segmentBuilderInfos = new BlocksBuilderInfos();
+        BlocksBuilder blocksBuilder = new BlockBtreeFormatBuilder();
+        segmentBuilderInfos.setDataFileMetadataList(
+                Arrays.asList(new DataFileMetadata[] { dataFileMetadata }));
+        segmentBuilderInfos
+                .setEachDimensionBlockSize(segmentProperties.getDimensionColumnsValueSize());
+        segmentBuilderInfos.setFilePath(blockInfo.getFilePath());
+        // load the metadata
+        blocksBuilder.build(segmentBuilderInfos);
+        dataBlock = blocksBuilder.get();
+    }
 
-	/**
-	 * @return the totalNumberOfRows
-	 */
-	public long getTotalNumberOfRows() {
-		return totalNumberOfRows;
-	}
+    /**
+     * @return the totalNumberOfRows
+     */
+    public long getTotalNumberOfRows() {
+        return totalNumberOfRows;
+    }
 
-	/**
-	 * @param totalNumberOfRows
-	 *            the totalNumberOfRows to set
-	 */
-	public void setTotalNumberOfRows(long totalNumberOfRows) {
-		this.totalNumberOfRows = totalNumberOfRows;
-	}
+    /**
+     * @param totalNumberOfRows the totalNumberOfRows to set
+     */
+    public void setTotalNumberOfRows(long totalNumberOfRows) {
+        this.totalNumberOfRows = totalNumberOfRows;
+    }
 
-	/**
-	 * @return the segmentProperties
-	 */
-	public SegmentProperties getSegmentProperties() {
-		return segmentProperties;
-	}
+    /**
+     * @return the segmentProperties
+     */
+    public SegmentProperties getSegmentProperties() {
+        return segmentProperties;
+    }
 
-	/**
-	 * @return the dataBlock
-	 */
-	public DataBlock getDataBlock() {
-		return dataBlock;
-	}
+    /**
+     * @return the dataBlock
+     */
+    public DataBlock getDataBlock() {
+        return dataBlock;
+    }
 }

@@ -48,8 +48,8 @@ import org.carbondata.core.metadata.ValueEncoderMeta;
 import org.carbondata.core.reader.CarbonMetaDataReader;
 import org.carbondata.core.util.ByteUtil;
 import org.carbondata.core.util.CarbonUtil;
+import org.carbondata.format.BlockletBTreeIndex;
 import org.carbondata.format.FileMeta;
-import org.carbondata.format.LeafNodeBTreeIndex;
 
 /**
  * Below class will be used to convert the thrift object of data file 
@@ -86,7 +86,7 @@ public class DataFileMetadataConverter {
 		dataFileMetadata.setColumnInTable(columnSchemaList);
 		List<LeafNodeIndex> leafNodeIndexList = getLeafNodeIndexList(fileMeta
 				.getIndex());
-		List<org.carbondata.format.LeafNodeInfo> leaf_node_infos_Thrift = fileMeta
+		List<org.carbondata.format.BlockletInfo> leaf_node_infos_Thrift = fileMeta
 				.getLeaf_node_info();
 		List<LeafNodeInfo> leafNodeInfoList = new ArrayList<LeafNodeInfo>();
 		for (int i = 0; i < leaf_node_infos_Thrift.size(); i++) {
@@ -186,7 +186,7 @@ public class DataFileMetadataConverter {
 	 * @return leaf node info wrapper
 	 */
 	private LeafNodeInfo getLeafNodeInfo(
-			org.carbondata.format.LeafNodeInfo leafNodeInfoThrift) {
+			org.carbondata.format.BlockletInfo leafNodeInfoThrift) {
 		LeafNodeInfo leafNodeInfo = new LeafNodeInfo();
 		List<DataChunk> dimensionColumnChunk = new ArrayList<DataChunk>();
 		List<DataChunk> measureChunk = new ArrayList<DataChunk>();
@@ -231,7 +231,7 @@ public class DataFileMetadataConverter {
 		case INVERTED_INDEX:
 			return Encoding.INVERTED_INDEX;
 		case BIT_PACKED:
-			return Encoding.BITPACKED;
+			return Encoding.BIT_PACKED;
 		default:
 			return Encoding.DICTIONARY;
 		}
@@ -282,16 +282,16 @@ public class DataFileMetadataConverter {
 	 * @return leaf node index wrapper
 	 */
 	private List<LeafNodeIndex> getLeafNodeIndexList(
-			org.carbondata.format.LeafNodeIndex leafNodeIndexThrift) {
+			org.carbondata.format.BlockletIndex leafNodeIndexThrift) {
 
-		List<LeafNodeBTreeIndex> b_tree_index = leafNodeIndexThrift
+		List<BlockletBTreeIndex> b_tree_index = leafNodeIndexThrift
 				.getB_tree_index();
-		List<org.carbondata.format.LeafNodeMinMaxIndex> min_max_index = leafNodeIndexThrift
+		List<org.carbondata.format.BlockletMinMaxIndex> min_max_index = leafNodeIndexThrift
 				.getMin_max_index();
 		List<LeafNodeIndex> leafNodeIndex = new ArrayList<LeafNodeIndex>(
 				b_tree_index.size());
 		LeafNodeBtreeIndex btreeIndex = null;
-		LeafNodeBTreeIndex leafNodeBTreeIndex = null;
+		BlockletBTreeIndex leafNodeBTreeIndex = null;
 		LeafNodeIndex indexInfo = null;
 		LeafNodeMinMaxIndex minMaxIndex = null;
 		for (int i = 0; i < b_tree_index.size(); i++) {
@@ -352,16 +352,16 @@ public class DataFileMetadataConverter {
 		switch (dataTypeThrift) {
 		case STRING:
 			return DataType.STRING;
-		case INTEGER:
-			return DataType.INTEGER;
+		case INT:
+			return DataType.INT;
 		case LONG:
 			return DataType.LONG;
 		case DOUBLE:
 			return DataType.DOUBLE;
-		case BIG_DECIMAL:
-			return DataType.BIG_DECIMAL;
-		case TIME_STAMP:
-			return DataType.TIME_STAMP;
+		case DECIMAL:
+			return DataType.DECIMAL;
+		case TIMESTAMP:
+			return DataType.TIMESTAMP;
 		case ARRAY:
 			return DataType.ARRAY;
 		case STRUCT:

@@ -22,50 +22,50 @@ import org.carbondata.core.carbon.metadata.leafnode.datachunk.PresenceMeta;
 import org.carbondata.core.datastorage.store.dataholder.CarbonReadDataHolder;
 
 /**
- * Holder for measure column chunk 
+ * Holder for measure column chunk
  * it will have data and its attributes which will
- * be required for processing 
+ * be required for processing
  */
 public class MeasureColumnDataChunk {
 
-	/**
-	 * measure chunk 
-	 */
-	private CarbonReadDataHolder measureDataHolder;
-	
-	/**
-	 * below to hold null value holds this information
-	 * about the null value index this will be helpful in case of
-	 * to remove the null value while aggregation
-	 */
-	private PresenceMeta  nullValueIndexHolder;
+    /**
+     * measure chunk
+     */
+    private CarbonReadDataHolder measureDataHolder;
 
-	/**
-	 * @return the measureDataHolder
-	 */
-	public CarbonReadDataHolder getMeasureDataHolder() {
-		return measureDataHolder;
-	}
+    /**
+     * below to hold null value holds this information
+     * about the null value index this will be helpful in case of
+     * to remove the null value while aggregation
+     */
+    private PresenceMeta nullValueIndexHolder;
 
-	/**
-	 * @param measureDataHolder the measureDataHolder to set
-	 */
-	public void setMeasureDataHolder(CarbonReadDataHolder measureDataHolder) {
-		this.measureDataHolder = measureDataHolder;
-	}
+    /**
+     * @return the measureDataHolder
+     */
+    public CarbonReadDataHolder getMeasureDataHolder() {
+        return measureDataHolder;
+    }
 
-	/**
-	 * @return the nullValueIndexHolder
-	 */
-	public PresenceMeta getNullValueIndexHolder() {
-		return nullValueIndexHolder;
-	}
+    /**
+     * @param measureDataHolder the measureDataHolder to set
+     */
+    public void setMeasureDataHolder(CarbonReadDataHolder measureDataHolder) {
+        this.measureDataHolder = measureDataHolder;
+    }
 
-	/**
-	 * @param nullValueIndexHolder the nullValueIndexHolder to set
-	 */
-	public void setNullValueIndexHolder(PresenceMeta nullValueIndexHolder) {
-		this.nullValueIndexHolder = nullValueIndexHolder;
-	}
-	
+    /**
+     * @return the nullValueIndexHolder
+     */
+    public PresenceMeta getNullValueIndexHolder() {
+        return nullValueIndexHolder;
+    }
+
+    /**
+     * @param nullValueIndexHolder the nullValueIndexHolder to set
+     */
+    public void setNullValueIndexHolder(PresenceMeta nullValueIndexHolder) {
+        this.nullValueIndexHolder = nullValueIndexHolder;
+    }
+
 }

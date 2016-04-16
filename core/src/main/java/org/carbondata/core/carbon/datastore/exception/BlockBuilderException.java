@@ -23,8 +23,8 @@ import java.util.Locale;
 
 /**
  * Exception class for block builder
- * @author Administrator
  *
+ * @author Administrator
  */
 public class BlockBuilderException extends Exception {
     /**
@@ -51,10 +51,8 @@ public class BlockBuilderException extends Exception {
     /**
      * Constructor
      *
-     * @param msg
-     * 			exception message
-     * @param throwable
-     * 			detail exception
+     * @param msg       exception message
+     * @param throwable detail exception
      */
     public BlockBuilderException(String msg, Throwable throwable) {
         super(msg, throwable);
@@ -84,8 +82,7 @@ public class BlockBuilderException extends Exception {
     /**
      * getLocalizedMessage
      */
-    @Override
-    public String getLocalizedMessage() {
+    @Override public String getLocalizedMessage() {
         return super.getLocalizedMessage();
     }
 

@@ -104,7 +104,7 @@ public class ColumnSchema implements Serializable {
     /**
      * used in case of schema restructuring
      */
-    private Object defaultValue;
+    private byte[] defaultValue;
 
     /**
      * @return the columnName
@@ -249,14 +249,14 @@ public class ColumnSchema implements Serializable {
     /**
      * @return the defaultValue
      */
-    public Object getDefaultValue() {
+    public byte[] getDefaultValue() {
         return defaultValue;
     }
 
     /**
      * @param defaultValue the defaultValue to set
      */
-    public void setDefaultValue(Object defaultValue) {
+    public void setDefaultValue(byte[] defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -309,17 +309,17 @@ public class ColumnSchema implements Serializable {
         this.dataType = dataType;
     }
 
-	/**
-	 * @return the encoderList
-	 */
-	public Set<Encoding> getEncodingList() {
-		return encodingList;
-	}
+    /**
+     * @return the encoderList
+     */
+    public Set<Encoding> getEncodingList() {
+        return encodingList;
+    }
 
-	/**
-	 * @param encoderList the encoderList to set
-	 */
-	public void setEncodintList(Set<Encoding> encodingList) {
-		this.encodingList = encodingList;
-	}
+    /**
+     * @param encoderList the encoderList to set
+     */
+    public void setEncodintList(Set<Encoding> encodingList) {
+        this.encodingList = encodingList;
+    }
 }

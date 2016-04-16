@@ -18,7 +18,6 @@
  */
 package org.carbondata.core.carbon.metadata.schema.table.column;
 
-
 /**
  * class represent column(measure) in table
  */
@@ -44,8 +43,8 @@ public class CarbonMeasure extends CarbonDimension {
      */
     private int precision;
 
-    public CarbonMeasure(ColumnSchema columnSchema, int ordinal,int tableOrdinal) {
-        super(columnSchema, ordinal,tableOrdinal);
+    public CarbonMeasure(ColumnSchema columnSchema, int ordinal) {
+        super(columnSchema, ordinal);
         this.scale = columnSchema.getScale();
         this.precision = columnSchema.getPrecision();
     }

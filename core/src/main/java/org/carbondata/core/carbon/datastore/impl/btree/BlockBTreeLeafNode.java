@@ -32,123 +32,102 @@ import org.carbondata.core.util.CarbonUtil;
 
 /**
  * Leaf node class of a btree
- *
  */
 public class BlockBTreeLeafNode extends AbstractBtreeLeafNode {
 
-	/**
-	 * reader for dimension chunk
-	 */
-	private DimensionColumnChunkReader dimensionChunksReader;
+    /**
+     * reader for dimension chunk
+     */
+    private DimensionColumnChunkReader dimensionChunksReader;
 
-	/**
-	 * reader of measure chunk
-	 */
-	private MeasureColumnChunkReader measureColumnChunkReader;
+    /**
+     * reader of measure chunk
+     */
+    private MeasureColumnChunkReader measureColumnChunkReader;
 
-	/**
-	 * Create a leaf node 
-	 * @param builderInfos
-	 * 			builder infos which have required metadata to create a leaf node 
-	 * @param leafIndex
-	 * 			leaf node index
-	 * @param nodeNumber
-	 * 			node number of the node 
-	 * 			this will be used during query execution when we can 
-	 * 			give some leaf node of a btree to one executor some to other 
-	 */
-	public BlockBTreeLeafNode(BlocksBuilderInfos builderInfos, int leafIndex, long nodeNumber) {
-		// get a lead node min max
-		LeafNodeMinMaxIndex minMaxIndex = builderInfos.getDataFileMetadataList().get(0)
-				.getLeafNodeList().get(leafIndex).getLeafNodeIndex()
-				.getMinMaxIndex();
-		// max key of the columns
-		maxKeyOfColumns = minMaxIndex.getMaxValues();
-		// min keys of the columns
-		minKeyOfColumns = minMaxIndex.getMinValues();
-		// number of keys present in the leaf
-		numberOfKeys = builderInfos.getDataFileMetadataList().get(0).getLeafNodeList()
-				.get(leafIndex).getNumberOfRows();
-		// create a instance of dimension chunk
-		dimensionChunksReader = new CompressedDimensionChunkFileBasedReader(
-				builderInfos.getDataFileMetadataList().get(0).getLeafNodeList()
-						.get(leafIndex).getDimensionColumnChunk(),
-				builderInfos.getDimensionColumnValueSize(),
-				builderInfos.getFilePath());
-		// get the value compression model which was used to compress the measure values
-		ValueCompressionModel valueCompressionModel=  
-				CarbonUtil
-				.getValueCompressionModel(builderInfos.getDataFileMetadataList().get(0)
-						.getLeafNodeList().get(leafIndex)
-						.getMeasureColumnChunk());
-		// create a instance of measure column chunk reader 
-		measureColumnChunkReader = new CompressedMeasureChunkFileBasedReader(
-				builderInfos.getDataFileMetadataList().get(0).getLeafNodeList()
-						.get(leafIndex).getMeasureColumnChunk(),
-				valueCompressionModel, builderInfos.getFilePath());
-		this.nodeNumber=nodeNumber;
-	}
+    /**
+     * Create a leaf node
+     *
+     * @param builderInfos builder infos which have required metadata to create a leaf node
+     * @param leafIndex    leaf node index
+     * @param nodeNumber   node number of the node
+     *                     this will be used during query execution when we can
+     *                     give some leaf node of a btree to one executor some to other
+     */
+    public BlockBTreeLeafNode(BlocksBuilderInfos builderInfos, int leafIndex, long nodeNumber) {
+        // get a lead node min max
+        LeafNodeMinMaxIndex minMaxIndex =
+                builderInfos.getDataFileMetadataList().get(0).getLeafNodeList().get(leafIndex)
+                        .getLeafNodeIndex().getMinMaxIndex();
+        // max key of the columns
+        maxKeyOfColumns = minMaxIndex.getMaxValues();
+        // min keys of the columns
+        minKeyOfColumns = minMaxIndex.getMinValues();
+        // number of keys present in the leaf
+        numberOfKeys =
+                builderInfos.getDataFileMetadataList().get(0).getLeafNodeList().get(leafIndex)
+                        .getNumberOfRows();
+        // create a instance of dimension chunk
+        dimensionChunksReader = new CompressedDimensionChunkFileBasedReader(
+                builderInfos.getDataFileMetadataList().get(0).getLeafNodeList().get(leafIndex)
+                        .getDimensionColumnChunk(), builderInfos.getDimensionColumnValueSize(),
+                builderInfos.getFilePath());
+        // get the value compression model which was used to compress the measure values
+        ValueCompressionModel valueCompressionModel = CarbonUtil.getValueCompressionModel(
+                builderInfos.getDataFileMetadataList().get(0).getLeafNodeList().get(leafIndex)
+                        .getMeasureColumnChunk());
+        // create a instance of measure column chunk reader
+        measureColumnChunkReader = new CompressedMeasureChunkFileBasedReader(
+                builderInfos.getDataFileMetadataList().get(0).getLeafNodeList().get(leafIndex)
+                        .getMeasureColumnChunk(), valueCompressionModel,
+                builderInfos.getFilePath());
+        this.nodeNumber = nodeNumber;
+    }
 
-	/**
-	 * Below method will be used to get the dimension chunks
-	 * 
-	 * @param fileReader
-	 *            file reader to read the chunks from file
-	 * @param blockIndexes
-	 *            indexes of the blocks need to be read
-	 * @return dimension data chunks
-	 */
-	@Override
-	public DimensionColumnDataChunk[] getDimensionChunks(FileHolder fileReader,
-			int[] blockIndexes) {
-		return dimensionChunksReader.readDimensionChunks(fileReader,
-				blockIndexes);
-	}
+    /**
+     * Below method will be used to get the dimension chunks
+     *
+     * @param fileReader   file reader to read the chunks from file
+     * @param blockIndexes indexes of the blocks need to be read
+     * @return dimension data chunks
+     */
+    @Override public DimensionColumnDataChunk[] getDimensionChunks(FileHolder fileReader,
+            int[] blockIndexes) {
+        return dimensionChunksReader.readDimensionChunks(fileReader, blockIndexes);
+    }
 
-	/**
-	 * Below method will be used to get the dimension chunk
-	 * 
-	 * @param fileReader
-	 *            file reader to read the chunk from file
-	 * @param blockIndex
-	 *            block index to be read
-	 * @return dimension data chunk
-	 */
-	@Override
-	public DimensionColumnDataChunk getDimensionChunk(FileHolder fileReader,
-			int blockIndex) {
-		return dimensionChunksReader.readDimensionChunk(fileReader, blockIndex);
-	}
+    /**
+     * Below method will be used to get the dimension chunk
+     *
+     * @param fileReader file reader to read the chunk from file
+     * @param blockIndex block index to be read
+     * @return dimension data chunk
+     */
+    @Override public DimensionColumnDataChunk getDimensionChunk(FileHolder fileReader,
+            int blockIndex) {
+        return dimensionChunksReader.readDimensionChunk(fileReader, blockIndex);
+    }
 
-	/**
-	 * Below method will be used to get the measure chunk
-	 * 
-	 * @param fileReader
-	 *            file reader to read the chunk from file
-	 * @param blockIndexes
-	 *            block indexes to be read from file
-	 * @return measure column data chunk
-	 */
-	@Override
-	public MeasureColumnDataChunk[] getMeasureChunks(FileHolder fileReader,
-			int[] blockIndexes) {
-		return measureColumnChunkReader.readMeasureChunks(fileReader,
-				blockIndexes);
-	}
+    /**
+     * Below method will be used to get the measure chunk
+     *
+     * @param fileReader   file reader to read the chunk from file
+     * @param blockIndexes block indexes to be read from file
+     * @return measure column data chunk
+     */
+    @Override public MeasureColumnDataChunk[] getMeasureChunks(FileHolder fileReader,
+            int[] blockIndexes) {
+        return measureColumnChunkReader.readMeasureChunks(fileReader, blockIndexes);
+    }
 
-	/**
-	 * Below method will be used to read the measure chunk
-	 * 
-	 * @param fileReader
-	 *            file read to read the file chunk
-	 * @param blockIndex
-	 *            block index to be read from file
-	 * @return measure data chunk
-	 */
-	@Override
-	public MeasureColumnDataChunk getMeasureChunk(FileHolder fileReader,
-			int blockIndex) {
-		return measureColumnChunkReader
-				.readMeasureChunk(fileReader, blockIndex);
-	}
+    /**
+     * Below method will be used to read the measure chunk
+     *
+     * @param fileReader file read to read the file chunk
+     * @param blockIndex block index to be read from file
+     * @return measure data chunk
+     */
+    @Override public MeasureColumnDataChunk getMeasureChunk(FileHolder fileReader, int blockIndex) {
+        return measureColumnChunkReader.readMeasureChunk(fileReader, blockIndex);
+    }
 }

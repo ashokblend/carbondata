@@ -68,7 +68,7 @@ public class CarbonTableTest extends TestCase {
     }
 
     @Test public void testDimensionPresentInTableIsProper() {
-        CarbonDimension dimension = new CarbonDimension(getColumnarDimensionColumn(), 0,1);
+        CarbonDimension dimension = new CarbonDimension(getColumnarDimensionColumn(), 0);
         assertTrue(carbonTable.getDimensionByName("carbonTestTable", "IMEI").equals(dimension));
     }
 

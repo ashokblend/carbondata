@@ -24,76 +24,72 @@ import org.carbondata.core.carbon.metadata.leafnode.DataFileMetadata;
 
 /**
  * below class holds the meta data requires to build the blocks
- *
  */
 public class BlocksBuilderInfos {
 
-	/**
-	 * holds all the information about data
-	 * file meta data
-	 */
-	private List<DataFileMetadata> dataFileMetadataList;
+    /**
+     * holds all the information about data
+     * file meta data
+     */
+    private List<DataFileMetadata> dataFileMetadataList;
 
-	/**
-	 * size of the each column value size
-	 * this will be useful for reading 
-	 */
-	private int[] dimensionColumnValueSize;
+    /**
+     * size of the each column value size
+     * this will be useful for reading
+     */
+    private int[] dimensionColumnValueSize;
 
-	/**
-	 * block file path 
-	 *
-	 */
-	private String filePath;
-	
-	/**
-	 * @return the eachDimensionBlockSize
-	 */
-	public int[] getDimensionColumnValueSize() {
-		return dimensionColumnValueSize;
-	}
+    /**
+     * block file path
+     */
+    private String filePath;
 
-	/**
-	 * @param eachDimensionBlockSize
-	 *            the eachDimensionBlockSize to set
-	 */
-	public void setEachDimensionBlockSize(int[] eachDimensionBlockSize) {
-		this.dimensionColumnValueSize = eachDimensionBlockSize;
-	}
+    /**
+     * @return the eachDimensionBlockSize
+     */
+    public int[] getDimensionColumnValueSize() {
+        return dimensionColumnValueSize;
+    }
 
-	/**
-	 * @return the filePath
-	 */
-	public String getFilePath() {
-		return filePath;
-	}
+    /**
+     * @param eachDimensionBlockSize the eachDimensionBlockSize to set
+     */
+    public void setEachDimensionBlockSize(int[] eachDimensionBlockSize) {
+        this.dimensionColumnValueSize = eachDimensionBlockSize;
+    }
 
-	/**
-	 * @param filePath
-	 *            the filePath to set
-	 */
-	public void setFilePath(String filePath) {
-		this.filePath = filePath;
-	}
+    /**
+     * @return the filePath
+     */
+    public String getFilePath() {
+        return filePath;
+    }
 
-	/**
-	 * @return the dataFileMetadataList
-	 */
-	public List<DataFileMetadata> getDataFileMetadataList() {
-		return dataFileMetadataList;
-	}
+    /**
+     * @param filePath the filePath to set
+     */
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
 
-	/**
-	 * @param dataFileMetadataList the dataFileMetadataList to set
-	 */
-	public void setDataFileMetadataList(List<DataFileMetadata> dataFileMetadataList) {
-		this.dataFileMetadataList = dataFileMetadataList;
-	}
+    /**
+     * @return the dataFileMetadataList
+     */
+    public List<DataFileMetadata> getDataFileMetadataList() {
+        return dataFileMetadataList;
+    }
 
-	/**
-	 * @param dimensionColumnValueSize the dimensionColumnValueSize to set
-	 */
-	public void setDimensionColumnValueSize(int[] dimensionColumnValueSize) {
-		this.dimensionColumnValueSize = dimensionColumnValueSize;
-	}
+    /**
+     * @param dataFileMetadataList the dataFileMetadataList to set
+     */
+    public void setDataFileMetadataList(List<DataFileMetadata> dataFileMetadataList) {
+        this.dataFileMetadataList = dataFileMetadataList;
+    }
+
+    /**
+     * @param dimensionColumnValueSize the dimensionColumnValueSize to set
+     */
+    public void setDimensionColumnValueSize(int[] dimensionColumnValueSize) {
+        this.dimensionColumnValueSize = dimensionColumnValueSize;
+    }
 }

@@ -22,29 +22,27 @@ import org.carbondata.core.carbon.datastore.BlocksBuilderInfos;
 import org.carbondata.core.carbon.metadata.leafnode.indexes.LeafNodeMinMaxIndex;
 
 /**
- * Leaf node for btree where only min max will be store 
- * this can be used from driver when only we need to find 
+ * Leaf node for btree where only min max will be store
+ * this can be used from driver when only we need to find
  * whether particular block be selected for query execution
- *
  */
-public class DriverBtreeLeafNode extends AbstractBtreeLeafNode{
+public class DriverBtreeLeafNode extends AbstractBtreeLeafNode {
 
-	/**
-	 * Create a leaf node 
-	 * @param builderInfos
-	 * 			builder infos which have required metadata to create a leaf node 
-	 * @param leafIndex
-	 * 			leaf node index
-	 * @param metadataIndex
-	 * 			metadata index
-	 */
-	public DriverBtreeLeafNode(BlocksBuilderInfos builderInfos, int metadataIndex, long nodeNumber) {
-		LeafNodeMinMaxIndex minMaxIndex = builderInfos
-				.getDataFileMetadataList().get(metadataIndex)
-				.getLeafNodeIndex().getMinMaxIndex();
-		maxKeyOfColumns = minMaxIndex.getMaxValues();
-		minKeyOfColumns = minMaxIndex.getMinValues();
-		numberOfKeys =1;
-		this.nodeNumber=nodeNumber;
-	}
+    /**
+     * Create a leaf node
+     *
+     * @param builderInfos  builder infos which have required metadata to create a leaf node
+     * @param leafIndex     leaf node index
+     * @param metadataIndex metadata index
+     */
+    public DriverBtreeLeafNode(BlocksBuilderInfos builderInfos, int metadataIndex,
+            long nodeNumber) {
+        LeafNodeMinMaxIndex minMaxIndex =
+                builderInfos.getDataFileMetadataList().get(metadataIndex).getLeafNodeIndex()
+                        .getMinMaxIndex();
+        maxKeyOfColumns = minMaxIndex.getMaxValues();
+        minKeyOfColumns = minMaxIndex.getMinValues();
+        numberOfKeys = 1;
+        this.nodeNumber = nodeNumber;
+    }
 }

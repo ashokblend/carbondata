@@ -19,9 +19,8 @@
 package org.carbondata.core.carbon.datastore;
 
 /**
- * Index class to store the index of the 
+ * Index class to store the index of the
  * segment leaf node infos
- *
  */
 public class IndexKey {
 
@@ -36,9 +35,10 @@ public class IndexKey {
     private byte[] noDictionaryKeys;
 
     public IndexKey() {
-    	dictionaryKeys = new byte[0];
-    	noDictionaryKeys = new byte[0];
-	}
+        dictionaryKeys = new byte[0];
+        noDictionaryKeys = new byte[0];
+    }
+
     /**
      * @return the dictionaryKeys
      */

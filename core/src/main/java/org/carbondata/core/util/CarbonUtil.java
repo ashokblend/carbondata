@@ -31,17 +31,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.gson.Gson;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.carbondata.common.logging.LogService;
 import org.carbondata.common.logging.LogServiceFactory;
+import org.carbondata.core.carbon.metadata.encoder.Encoding;
+import org.carbondata.core.carbon.metadata.leafnode.datachunk.DataChunk;
 import org.carbondata.core.constants.CarbonCommonConstants;
 import org.carbondata.core.datastorage.store.FileHolder;
 import org.carbondata.core.datastorage.store.columnar.ColumnarKeyStoreDataHolder;
 import org.carbondata.core.datastorage.store.columnar.ColumnarKeyStoreInfo;
 import org.carbondata.core.datastorage.store.columnar.UnBlockIndexer;
+import org.carbondata.core.datastorage.store.compression.MeasureMetaDataModel;
+import org.carbondata.core.datastorage.store.compression.ValueCompressionModel;
 import org.carbondata.core.datastorage.store.fileperations.AtomicFileOperations;
 import org.carbondata.core.datastorage.store.fileperations.AtomicFileOperationsImpl;
 import org.carbondata.core.datastorage.store.filesystem.CarbonFile;
@@ -53,6 +56,7 @@ import org.carbondata.core.metadata.CarbonMetadata.Dimension;
 import org.carbondata.core.metadata.LeafNodeInfo;
 import org.carbondata.core.metadata.LeafNodeInfoColumnar;
 import org.carbondata.core.metadata.SliceMetaData;
+import org.carbondata.core.metadata.ValueEncoderMeta;
 import org.carbondata.core.reader.CarbonMetaDataReader;
 import org.carbondata.core.vo.HybridStoreModel;
 import org.pentaho.di.core.exception.KettleException;
@@ -1986,6 +1990,99 @@ public final class CarbonUtil {
       }
       int[] noDictionaryValIndex=ArrayUtils.toPrimitive(dirSurrogateList.toArray(new Integer[dirSurrogateList.size()]));
       return noDictionaryValIndex;
+    }
+
+    /**
+     * This method will be used to get bit length of the dimensions based on the
+     * dimension partitioner. If partitioner is value is 1 the column
+     * cardinality will be incremented in such a way it will fit in byte level.
+     * for example if number of bits required to store one column value is 3
+     * bits the 8 bit will be assigned to each value of that column.In this way
+     * we may waste some bits(maximum 7 bits) If partitioner value is more than
+     * 1 then few column are stored together. so cardinality of that group will
+     * be incremented to fit in byte level For example: if cardinality for 3
+     * columns stored together is [1,1,1] then number of bits required will be
+     * [1,1,1] then last value will be incremented and it will become[1,1,6]
+     *
+     * @param dimCardinality cardinality of each column
+     * @param dimPartitioner Partitioner is how column is stored if value is 1 then column
+     *                       wise if value is more than 1 then it is in group with other
+     *                       column
+     * @return number of bits for each column
+     * @TODO for row group only last value is incremented problem in this cases
+     * in if last column in that group is selected most of the time in
+     * filter query Comparison will be more if it incremented uniformly
+     * then comparison will be distributed
+     */
+    public static int[] getDimensionBitLength(int[] dimCardinality, int[] dimPartitioner) {
+        int[] bitLength = new int[dimCardinality.length];
+        int dimCounter = 0;
+        for (int i = 0; i < dimPartitioner.length; i++) {
+            if (dimPartitioner[i] == 1) {
+                // for columnar store
+                // fully filled bits means complete byte or number of bits
+                // assigned will be in
+                // multiplication of 8
+                bitLength[dimCounter] =
+                        CarbonUtil.getBitLengthFullyFilled(dimCardinality[dimCounter]);
+                dimCounter++;
+            } else {
+                // for row store
+                int totalSize = 0;
+                for (int j = 0; j < dimPartitioner[i]; j++) {
+                    bitLength[dimCounter] =
+                            CarbonUtil.getIncrementedCardinality(dimCardinality[dimCounter]);
+                    totalSize += bitLength[dimCounter];
+                    dimCounter++;
+                }
+                // below code is to increment in such a way that row group will
+                // be stored
+                // as byte level
+                int mod = totalSize % 8;
+                if (mod > 0) {
+                    bitLength[dimCounter - 1] = bitLength[dimCounter - 1] + (8 - mod);
+                }
+            }
+        }
+        return bitLength;
+    }
+
+    /**
+     * Below method will be used to get the value compression model of the
+     * measure data chunk
+     *
+     * @param measureDataChunkList
+     * @return value compression model
+     */
+    public static ValueCompressionModel getValueCompressionModel(
+            List<DataChunk> measureDataChunkList) {
+        Object[] maxValue = new Object[measureDataChunkList.size()];
+        Object[] minValue = new Object[measureDataChunkList.size()];
+        Object[] uniqueValue = new Object[measureDataChunkList.size()];
+        int[] decimal = new int[measureDataChunkList.size()];
+        char[] type = new char[measureDataChunkList.size()];
+        byte[] dataTypeSelected = new byte[measureDataChunkList.size()];
+
+        /**
+         * to fill the meta data required for value compression model
+         */
+        for (int i = 0; i < dataTypeSelected.length; i++) {
+            int indexOf = measureDataChunkList.get(i).getEncodingList().indexOf(Encoding.DELTA);
+            if (indexOf > -1) {
+                ValueEncoderMeta valueEncoderMeta =
+                        measureDataChunkList.get(i).getValueEncoderMeta().get(indexOf);
+                maxValue[i] = valueEncoderMeta.getMaxValue();
+                minValue[i] = valueEncoderMeta.getMinValue();
+                uniqueValue[i] = valueEncoderMeta.getUniqueValue();
+                decimal[i] = valueEncoderMeta.getDecimal();
+                type[i] = valueEncoderMeta.getType();
+                dataTypeSelected[i] = valueEncoderMeta.getDataTypeSelected();
+            }
+        }
+        MeasureMetaDataModel measureMetadataModel =
+                new MeasureMetaDataModel(minValue, maxValue, decimal, dataTypeSelected.length,
+                        uniqueValue, type, dataTypeSelected);
+        return ValueCompressionUtil.getValueCompressionModel(measureMetadataModel);
     }
 }
 

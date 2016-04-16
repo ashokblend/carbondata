@@ -20,12 +20,11 @@ package org.carbondata.core.carbon.datastore.chunk;
 
 /**
  * Dimension chunk attributes which holds all the
- * property about the dimension chunk data 
- *
+ * property about the dimension chunk data
  */
 public class DimensionChunkAttributes {
 
-	 /**
+    /**
      * inverted index of the data
      */
     private int[] invertedIndexes;
@@ -39,65 +38,65 @@ public class DimensionChunkAttributes {
      * each row size
      */
     private int eachValueSize;
-    
+
     /**
      * is no dictionary
      */
     private boolean isNoDictionary;
 
-	/**
-	 * @return the invertedIndexes
-	 */
-	public int[] getInvertedIndexes() {
-		return invertedIndexes;
-	}
+    /**
+     * @return the invertedIndexes
+     */
+    public int[] getInvertedIndexes() {
+        return invertedIndexes;
+    }
 
-	/**
-	 * @param invertedIndexes the invertedIndexes to set
-	 */
-	public void setInvertedIndexes(int[] invertedIndexes) {
-		this.invertedIndexes = invertedIndexes;
-	}
+    /**
+     * @param invertedIndexes the invertedIndexes to set
+     */
+    public void setInvertedIndexes(int[] invertedIndexes) {
+        this.invertedIndexes = invertedIndexes;
+    }
 
-	/**
-	 * @return the invertedIndexesReverse
-	 */
-	public int[] getInvertedIndexesReverse() {
-		return invertedIndexesReverse;
-	}
+    /**
+     * @return the invertedIndexesReverse
+     */
+    public int[] getInvertedIndexesReverse() {
+        return invertedIndexesReverse;
+    }
 
-	/**
-	 * @param invertedIndexesReverse the invertedIndexesReverse to set
-	 */
-	public void setInvertedIndexesReverse(int[] invertedIndexesReverse) {
-		this.invertedIndexesReverse = invertedIndexesReverse;
-	}
+    /**
+     * @param invertedIndexesReverse the invertedIndexesReverse to set
+     */
+    public void setInvertedIndexesReverse(int[] invertedIndexesReverse) {
+        this.invertedIndexesReverse = invertedIndexesReverse;
+    }
 
-	/**
-	 * @return the eachRowSize
-	 */
-	public int getEachValueSize() {
-		return eachValueSize;
-	}
+    /**
+     * @return the eachRowSize
+     */
+    public int getEachValueSize() {
+        return eachValueSize;
+    }
 
-	/**
-	 * @param eachRowSize the eachRowSize to set
-	 */
-	public void setEachRowSize(int eachRowSize) {
-		this.eachValueSize = eachRowSize;
-	}
+    /**
+     * @param eachRowSize the eachRowSize to set
+     */
+    public void setEachRowSize(int eachRowSize) {
+        this.eachValueSize = eachRowSize;
+    }
 
-	/**
-	 * @return the isNoDictionary
-	 */
-	public boolean isNoDictionary() {
-		return isNoDictionary;
-	}
+    /**
+     * @return the isNoDictionary
+     */
+    public boolean isNoDictionary() {
+        return isNoDictionary;
+    }
 
-	/**
-	 * @param isNoDictionary the isNoDictionary to set
-	 */
-	public void setNoDictionary(boolean isNoDictionary) {
-		this.isNoDictionary = isNoDictionary;
-	}
+    /**
+     * @param isNoDictionary the isNoDictionary to set
+     */
+    public void setNoDictionary(boolean isNoDictionary) {
+        this.isNoDictionary = isNoDictionary;
+    }
 }
