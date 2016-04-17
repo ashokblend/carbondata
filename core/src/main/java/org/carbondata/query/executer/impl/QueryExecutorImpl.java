@@ -421,7 +421,7 @@ public class QueryExecutorImpl extends AbstractQueryExecutor {
         if (slice.getDimensionCardinality().length > 0) {
             info.setColumnarSplitter(new MultiDimKeyVarLengthVariableSplitGenerator(CarbonUtil
                     .getDimensionBitLength(slice.getHybridStoreModel().getHybridCardinality(),
-                            slice.getHybridStoreModel().getDimensionPartitioner()),
+                            slice.getHybridStoreModel().getColumnSplit()),
                     slice.getHybridStoreModel().getColumnSplit()));
         }
         info.setLimit(queryModel.getLimit());

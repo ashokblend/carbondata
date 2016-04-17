@@ -18,6 +18,11 @@ public class HybridStoreModel {
      *
      */
     private int[] hybridCardinality;
+    
+    /**
+     * true means given colgroup is columnar else row store
+     */
+    private boolean[] columnarStore;
 
     /**
      * This has detail of dimension which has to be stored as column based or row based
@@ -48,6 +53,8 @@ public class HybridStoreModel {
     private Map<Integer, Integer> dimOrdinalStoreIndexMapping;
 
     private int noOfColumnsStore;
+
+    private int[][] columnGroups;
 
     public int[] getColumnStoreOrdinals() {
         return columnStoreOrdinals;
@@ -124,4 +131,20 @@ public class HybridStoreModel {
         this.noOfColumnsStore = noOfColumnsStore;
     }
 
+    public boolean isColumnar(int colGroup) {
+      return columnarStore[colGroup];
+    }
+
+    public void setColumnarStore(boolean[] columnarStore) {
+      this.columnarStore = columnarStore;
+    }
+
+    public void setColumnGroup(int[][] columnGroups) {
+      this.columnGroups=columnGroups;
+    }
+    public int[][] getColumnGroup(){
+      return this.columnGroups;
+    }
+
+    
 }

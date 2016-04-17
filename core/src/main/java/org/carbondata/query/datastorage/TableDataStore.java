@@ -116,6 +116,7 @@ public class TableDataStore {
     private boolean[] aggKeyBlock;
     private int[] dimCardinality;
     private HybridStoreModel hybridStoreModel;
+    private boolean[] isNoDictionary;
 
     public TableDataStore(String table, Cube metaCube, SliceMetaData smd, KeyGenerator keyGenerator,
             int[] dimCardinality, HybridStoreModel hybridStoreModel) {
@@ -221,13 +222,13 @@ public class TableDataStore {
                         "In-Memory"));
         if (isColumnar) {
             return new CSBTree(this.hybridStoreModel, keyGen, msrCount, tableName, isFileStore,
-                    keyblockSize, aggKeyBlock);
+                    keyblockSize, aggKeyBlock,isNoDictionary);
         } else {
             return new CSBTree(keyGen, msrCount, tableName, isFileStore);
         }
     }
 
-    public boolean loadDataFromFile(String filesLocaton, int startAndEndKeySize) {
+    public boolean loadDataFromFile(String filesLocaton, int startAndEndKeySize, int[] keyBlockSize,int NoDictionaryCount) {
         // added for get the MDKey size by liupeng 00204190.
         CarbonFile file =
                 FileFactory.getCarbonFile(filesLocaton, FileFactory.getFileType(filesLocaton));
@@ -235,7 +236,7 @@ public class TableDataStore {
         int numberOfValues = metaCube.getMeasures(tableName).size() + (hasFactCount ? 1 : 0);
         StandardLogService
                 .setThreadName(StandardLogService.getPartitionID(metaCube.getOnlyCubeName()), null);
-        checkIsColumnar(numberOfValues);
+        checkIsColumnar(numberOfValues,keyBlockSize,NoDictionaryCount);
         //        int keySize = keyGenerator.getKeySizeInBytes();
         int keySize = startAndEndKeySize;
         int msrCount = smd.getMeasures().length;
@@ -386,53 +387,37 @@ public class TableDataStore {
     /**
      * @param numberOfValues
      */
-    private void checkIsColumnar(int numberOfValues) {
+    private void checkIsColumnar(int numberOfValues, int[] keyBlockSize, int NoDictionaryCount) {
         isColumnar = Boolean.parseBoolean(CarbonCommonConstants.IS_COLUMNAR_STORAGE_DEFAULTVALUE);
 
         if (isColumnar) {
-            int dimSet = Integer.parseInt(
-                    CarbonCommonConstants.DIMENSION_SPLIT_VALUE_IN_COLUMNAR_DEFAULTVALUE);
-
-            if (!isColumnar) {
-                dimSet = keyGenerator.getDimCount();
-            }
-            int[] keyBlockSize = null;
-
+            int complexDimCount=getComplexCount();
             // if there is no single dims present (i.e only high card dims is present.)
             if (this.dimCardinality.length > 0) {
-                keyBlockSize = new MultiDimKeyVarLengthVariableSplitGenerator(CarbonUtil
-                        .getDimensionBitLength(this.hybridStoreModel.getHybridCardinality(),
-                                this.hybridStoreModel.getDimensionPartitioner()),
-                        this.hybridStoreModel.getColumnSplit()).getBlockKeySize();
-
+                int noDictStartIndex=this.hybridStoreModel.getNoOfColumnStore();
+                this.isNoDictionary=new boolean[this.hybridStoreModel.getNoOfColumnStore()+NoDictionaryCount+complexDimCount];
+                for(int i = 0;i < NoDictionaryCount ; i++){
+                  this.isNoDictionary[noDictStartIndex+i] = true;
+                }
+              
                 boolean isAggKeyBlock = Boolean.parseBoolean(
                         CarbonCommonConstants.AGGREAGATE_COLUMNAR_KEY_BLOCK_DEFAULTVALUE);
                 if (isAggKeyBlock) {
                     int noDictionaryValue = Integer.parseInt(CarbonProperties.getInstance()
                             .getProperty(CarbonCommonConstants.HIGH_CARDINALITY_VALUE,
                                     CarbonCommonConstants.HIGH_CARDINALITY_VALUE_DEFAULTVALUE));
-                    int aggIndex = 0;
-                    if (this.hybridStoreModel.isHybridStore()) {
-                        this.aggKeyBlock =
-                                new boolean[this.hybridStoreModel.getColumnStoreOrdinals().length
-                                        + 1];
-                        this.aggKeyBlock[aggIndex++] = false;
-                    } else {
-                        this.aggKeyBlock =
-                                new boolean[this.hybridStoreModel.getColumnStoreOrdinals().length];
-                    }
-
-                    for (int i = hybridStoreModel.getRowStoreOrdinals().length;
-                         i < dimCardinality.length; i++) {
-                        if (dimCardinality[i] == 0) {
-                            continue;
-                        }
-                        if (dimCardinality[i] < noDictionaryValue) {
-                            this.aggKeyBlock[aggIndex++] = true;
-                            continue;
-                        }
-                        aggIndex++;
-                    }
+                    this.aggKeyBlock=new boolean[this.hybridStoreModel.getNoOfColumnStore()+NoDictionaryCount+complexDimCount];
+                    int[] columnSplits=hybridStoreModel.getColumnSplit();
+                    int dimCardinalityIndex=0;
+                    int aggIndex=0;
+                    for (int i = 0;i<columnSplits.length;i++){
+                      dimCardinalityIndex+=columnSplits[i];
+                      if(hybridStoreModel.isColumnar(i) && this.dimCardinality[dimCardinalityIndex]< noDictionaryValue){
+                          this.aggKeyBlock[aggIndex++] = true;
+                          continue;
+                      }
+                      aggIndex++;
+                  }
                 }
 
             } else {
@@ -444,6 +429,23 @@ public class TableDataStore {
 
             data = getDataStoreDS(keyGenerator, numberOfValues, null, null, false);
         }
+    }
+
+    private int getComplexCount() {
+      int complexCount=0;
+      for(int i=0;i<dimCardinality.length;i++)
+      {
+        if(dimCardinality[i]==0)
+        {
+          for(int j=i;j<dimCardinality.length;j++)
+          {
+            complexCount++;
+          }
+          break;
+        }
+        
+      }
+      return complexCount;
     }
 
     private int[] getKeyBlockSizeWithComplexTypes(int[] dimCardinality) {

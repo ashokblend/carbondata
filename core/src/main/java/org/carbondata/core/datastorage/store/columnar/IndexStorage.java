@@ -31,5 +31,7 @@ public interface IndexStorage<T> {
     T getDataIndexMap();
 
     int getTotalSize();
+    
+    byte[] getMinMax();
 
 }

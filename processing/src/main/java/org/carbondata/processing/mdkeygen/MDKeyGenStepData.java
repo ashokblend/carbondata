@@ -33,6 +33,6 @@ public class MDKeyGenStepData extends BaseStepData implements StepDataInterface 
     /**
      * generator for each column independently
      */
-    protected KeyGenerator[] generator;
+    protected KeyGenerator generator;
 
 }

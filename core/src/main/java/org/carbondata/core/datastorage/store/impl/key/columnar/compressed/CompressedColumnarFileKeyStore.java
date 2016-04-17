@@ -57,10 +57,8 @@ public class CompressedColumnarFileKeyStore extends AbstractColumnarKeyStore {
                     && this.columnarStoreInfo.getAggKeyBlock()[blockIndex[i]]) {
                 dataIndex = columnarStoreInfo.getNumberCompressor().unCompress(fileHolder
                         .readByteArray(columnarStoreInfo.getFilePath(),
-                                columnarStoreInfo.getDataIndexMapOffsets()[mapOfAggDataIndex
-                                        .get(blockIndex[i])],
-                                columnarStoreInfo.getDataIndexMapLength()[mapOfAggDataIndex
-                                        .get(blockIndex[i])]));
+                                columnarStoreInfo.getDataIndexMapOffsets()[blockIndex[i]],
+                                columnarStoreInfo.getDataIndexMapLength()[blockIndex[i]]));
                 if (!needCompressedData[i]) {
                     columnarKeyBlockData = UnBlockIndexer
                             .uncompressData(columnarKeyBlockData, dataIndex,
@@ -128,10 +126,8 @@ public class CompressedColumnarFileKeyStore extends AbstractColumnarKeyStore {
                 && this.columnarStoreInfo.getAggKeyBlock()[blockIndex]) {
             dataIndex = columnarStoreInfo.getNumberCompressor().unCompress(fileHolder
                     .readByteArray(columnarStoreInfo.getFilePath(),
-                            columnarStoreInfo.getDataIndexMapOffsets()[mapOfAggDataIndex
-                                    .get(blockIndex)],
-                            columnarStoreInfo.getDataIndexMapLength()[mapOfAggDataIndex
-                                    .get(blockIndex)]));
+                            columnarStoreInfo.getDataIndexMapOffsets()[blockIndex],
+                            columnarStoreInfo.getDataIndexMapLength()[blockIndex]));
             if (!needCompressedData) {
                 columnarKeyBlockData = UnBlockIndexer
                         .uncompressData(columnarKeyBlockData, dataIndex,

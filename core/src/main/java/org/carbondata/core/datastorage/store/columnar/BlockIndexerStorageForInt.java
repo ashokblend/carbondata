@@ -40,17 +40,11 @@ public class BlockIndexerStorageForInt implements IndexStorage<int[]> {
     private int totalSize;
 
     public BlockIndexerStorageForInt(byte[][] keyBlock) {
-        this(keyBlock, false, false, false);
+        this(keyBlock, false, false);
     }
 
     public BlockIndexerStorageForInt(byte[][] keyBlock, boolean compressData,
-            boolean isSortRequired, boolean isRowBlock) {
-        //in case of row block sort is not required
-        if (isRowBlock) {
-            this.keyBlock = keyBlock;
-            this.alreadySorted = true;
-            return;
-        }
+            boolean isSortRequired) {
         ColumnWithIntIndex[] columnWithIndexs = createColumnWithIndexArray(keyBlock, false);
         if (isSortRequired) {
             Arrays.sort(columnWithIndexs);
@@ -245,5 +239,15 @@ public class BlockIndexerStorageForInt implements IndexStorage<int[]> {
     @Override
     public int getTotalSize() {
         return totalSize;
+    }
+
+    @Override
+    public byte[] getMinMax() {
+      byte[] minVal = keyBlock[0];
+      byte[] maxVal =keyBlock[keyBlock.length-1];
+      byte[] columnMinMaxData=new byte[minVal.length+maxVal.length];
+      System.arraycopy(minVal, 0, columnMinMaxData, 0, minVal.length);
+      System.arraycopy(maxVal, 0, columnMinMaxData, minVal.length,maxVal.length);
+      return columnMinMaxData;
     }
 }

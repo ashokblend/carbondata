@@ -37,6 +37,8 @@ import org.carbondata.core.datastorage.store.filesystem.CarbonFile;
 import org.carbondata.core.datastorage.store.filesystem.CarbonFileFilter;
 import org.carbondata.core.datastorage.store.impl.FileFactory;
 import org.carbondata.core.keygenerator.KeyGenerator;
+import org.carbondata.core.keygenerator.columnar.impl.MultiDimKeyVarLengthEquiSplitGenerator;
+import org.carbondata.core.keygenerator.columnar.impl.MultiDimKeyVarLengthVariableSplitGenerator;
 import org.carbondata.core.keygenerator.factory.KeyGeneratorFactory;
 import org.carbondata.core.metadata.CarbonMetadata.Cube;
 import org.carbondata.core.metadata.CarbonMetadata.Dimension;
@@ -137,6 +139,7 @@ public class InMemoryTable implements Comparable<InMemoryTable> {
      * File store path
      */
     private String fileStore;
+    private int[] keyBlockSize;
 
     public InMemoryTable(CarbonDef.Schema schema, CarbonDef.Cube cube, Cube metaCube,
             String tableName, String fileStore, long modificationTime) {
@@ -227,29 +230,40 @@ public class InMemoryTable implements Comparable<InMemoryTable> {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         String cubeUniqueName = schemaName + '_' + cubeName;
         CarbonFile file = FileFactory.getCarbonFile(fileStore, FileFactory.getFileType(fileStore));
+        List<Integer> NoDictionaryDimOrdinals = new ArrayList<Integer>();
+        
         if (file.isDirectory()) {
             getDimensionCardinality(file, tableName);
             List<Dimension> dimensions = metaCube.getDimensions(tableName);
 
             boolean[] dimensionStoreType = new boolean[dimensionCardinality.length];
-            List<Integer> NoDictionaryDimOrdinals = new ArrayList<Integer>();
-            for (Dimension dimension : dimensions) {
-                if (dimension.isNoDictionaryDim()) {
-                    NoDictionaryDimOrdinals.add(dimension.getOrdinal());
-                    continue;
+            List<Integer> complexDimOrdinals=new ArrayList<Integer>();
+            for(int i=0;i<dimensionCardinality.length;i++)
+            {
+              if(metaCube.getDimensions(tableName).get(i).isNoDictionaryDim()){
+                NoDictionaryDimOrdinals.add(i);
+              } 
+              if(dimensionCardinality[i]==0)
+              {
+                for(int j=i;j<dimensionCardinality.length;j++)
+                {
+                  complexDimOrdinals.add(j);
                 }
-                if (dimension.isColumnar()) {
-                    dimensionStoreType[dimension.getOrdinal()] = dimension.isColumnar();
-                }
+                break;
+              }
             }
+            //0~1,2,3~4,5~6~7~8,9
+            int[][] columnGroups=new int[][]{{0},{1,2,3},{4,5},{6},{7},{8,9}};
+            
             hybridStoreModel = CarbonUtil
                     .getHybridStoreMeta(findRequiredDimensionForStartAndEndKey(),
-                            dimensionStoreType, NoDictionaryDimOrdinals);
+                      columnGroups, NoDictionaryDimOrdinals);
             keyGenerator = KeyGeneratorFactory
                     .getKeyGenerator(hybridStoreModel.getHybridCardinality(),
-                            hybridStoreModel.getDimensionPartitioner());
+                            hybridStoreModel.getColumnSplit());
             int startAndEndKeySizeWithPrimitives = keyGenerator.getKeySizeInBytes();
             keyGenerator.setStartAndEndKeySizeWithOnlyPrimitives(startAndEndKeySizeWithPrimitives);
+            setKeyBlockSize(complexDimOrdinals.size());
         }
         // Process fact and aggregate data cache
         if (!loadOnlyLevelFiles) {
@@ -262,7 +276,7 @@ public class InMemoryTable implements Comparable<InMemoryTable> {
                                 keyGenerator, dimensionCardinality, hybridStoreModel);
                 //add start and end key size with only primitives
                 if (dataCache.loadDataFromFile(fileStore,
-                        keyGenerator.getStartAndEndKeySizeWithOnlyPrimitives())) {
+                        keyGenerator.getStartAndEndKeySizeWithOnlyPrimitives(),keyBlockSize,NoDictionaryDimOrdinals.size())) {
                     dataCacheMap.put(table, dataCache);
                 }
             }
@@ -306,6 +320,23 @@ public class InMemoryTable implements Comparable<InMemoryTable> {
             LOGGER.error(CarbonEngineLogEvent.UNIBI_CARBONENGINE_MSG, e);
         }
     }
+
+    private void setKeyBlockSize(int size) {
+      int dimSet = Integer.parseInt(CarbonCommonConstants.DIMENSION_SPLIT_VALUE_IN_COLUMNAR_DEFAULTVALUE);
+      int[] mdKeyBlockSize = new MultiDimKeyVarLengthVariableSplitGenerator(CarbonUtil.getDimensionBitLength(this.hybridStoreModel.getHybridCardinality(),this.hybridStoreModel.getColumnSplit()),this.hybridStoreModel.getColumnSplit())
+              .getBlockKeySize();
+      int[] blockKeySize = new MultiDimKeyVarLengthEquiSplitGenerator(
+          CarbonUtil.getIncrementedCardinalityFullyFilled(dimensionCardinality),(byte)dimSet).getBlockKeySize();
+      keyBlockSize=mdKeyBlockSize;
+      //TO-DO    
+      /*int noOfColStore=hybridStoreModel.getNoOfColumnStore();
+      keyBlockSize=new int[noOfColStore+complexCount];
+      int startIndex=hybridStoreModel.getNoOfColumnStore()-1;
+      System.arraycopy(mdKeyBlockSize, 0, keyBlockSize, 0, hybridStoreModel.getNoOfColumnStore());
+      System.arraycopy(blockKeySize, startIndex, keyBlockSize, noOfColStore, blockKeySize.length-startIndex);*/
+    }
+
+
 
     private int[] findRequiredDimensionForStartAndEndKey() {
         List<Integer> dimCardinalities = new ArrayList<Integer>();

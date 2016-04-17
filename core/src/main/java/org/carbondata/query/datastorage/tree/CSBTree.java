@@ -130,14 +130,17 @@ public class CSBTree implements DataStore {
     // private String dataFolderLoc;
     private HybridStoreModel hybridStoreModel;
 
+    private boolean[] isNoDictionary;
+
     // Constructor
     public CSBTree(HybridStoreModel hybridStoreModel, KeyGenerator keyGenerator, int valueCount,
-            String tableName, boolean isFileStore, int[] keyBlockSize, boolean[] aggKeyBlock) {
+            String tableName, boolean isFileStore, int[] keyBlockSize, boolean[] aggKeyBlock,boolean[] isNoDictionary) {
         super();
 
         this.keyGenerator = keyGenerator;
         this.tableName = tableName;
         this.hybridStoreModel = hybridStoreModel;
+        this.isNoDictionary=isNoDictionary;
 
         // TODO Need to account for page headers and other fields
         upperMaxEntry = Integer.parseInt(CarbonProperties.getInstance()
@@ -254,6 +257,7 @@ public class CSBTree implements DataStore {
                 }
                 for (LeafNodeInfoColumnar leafNodeInfo : leafNodeInfoList) {
                     leafNodeInfo.setAggKeyBlock(aggKeyBlock);
+                    leafNodeInfo.setIsNoDictionary(isNoDictionary);
                     num += leafNodeInfo.getNumberOfKeys();
                     if (null == fileHolder) {
                         fileHolder = FileFactory

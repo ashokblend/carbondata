@@ -714,7 +714,7 @@ public class CarbonFactDataHandlerColumnarMerger implements CarbonFactHandler {
 
         @Override
         public IndexStorage call() throws Exception {
-            return new BlockIndexerStorageForInt(this.data, aggKeyBlock[this.index], true, false);
+            return new BlockIndexerStorageForInt(this.data, aggKeyBlock[this.index], true);
 
         }
 

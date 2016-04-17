@@ -225,4 +225,14 @@ public class BlockIndexerStorage implements IndexStorage<short[]> {
     public int getTotalSize() {
         return totalSize;
     }
+
+    @Override
+    public byte[] getMinMax() {
+      byte[] minVal = keyBlock[0];
+      byte[] maxVal =keyBlock[keyBlock.length-1];
+      byte[] columnMinMaxData=new byte[minVal.length+maxVal.length];
+      System.arraycopy(minVal, 0, columnMinMaxData, 0, minVal.length);
+      System.arraycopy(maxVal, 0, columnMinMaxData, minVal.length,maxVal.length);
+      return columnMinMaxData;
+    }
 }

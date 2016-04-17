@@ -103,6 +103,8 @@ public class LeafNodeInfoColumnar {
      */
     private byte[][] columnMinMaxData;
 
+    private boolean[] isNoDictionary;
+
     /**
      * getFileName().
      *
@@ -355,4 +357,14 @@ public class LeafNodeInfoColumnar {
     public void setCompressionModel(ValueCompressionModel compressionModel) {
         this.compressionModel = compressionModel;
     }
+    public void setIsNoDictionary(boolean[] isNoDictionary) {
+      this.isNoDictionary=isNoDictionary;
+    }
+
+    public boolean[] getIsNoDictionary() {
+      return isNoDictionary;
+    }
+    
+    
+
 }

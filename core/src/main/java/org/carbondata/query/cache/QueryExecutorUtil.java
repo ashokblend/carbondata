@@ -211,7 +211,7 @@ public final class QueryExecutorUtil {
 
             } else {
                 int[] range = generator
-                        .getKeyByteOffsets(hm.getMdKeyOrdinal(queryDimensions[i].getOrdinal()));
+                        .getKeyByteOffsets(queryDimensions[i].getOrdinal());
                 for (int j = range[0]; j <= range[1]; j++) {
                     integers.add(j);
                 }

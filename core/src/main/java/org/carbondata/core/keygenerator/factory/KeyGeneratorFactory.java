@@ -41,8 +41,8 @@ public final class KeyGeneratorFactory {
         return new MultiDimKeyVarLengthGenerator(incrementedCardinality);
     }
 
-    public static KeyGenerator getKeyGenerator(int[] dimCardinality, int[][] splits) {
-        int[] dimsBitLens = CarbonUtil.getDimensionBitLength(dimCardinality, splits);
+    public static KeyGenerator getKeyGenerator(int[] dimCardinality, int[] columnSplits) {
+        int[] dimsBitLens = CarbonUtil.getDimensionBitLength(dimCardinality, columnSplits);
 
         return new MultiDimKeyVarLengthGenerator(dimsBitLens);
     }
