@@ -53,7 +53,7 @@ import org.apache.spark.sql.catalyst.expressions.AttributeReference
         
        fillTables(carbonDataLoadSchema,child)
        fillRelations(carbonDataLoadSchema)
-       LoadCube(Some(metaStoreRelation.databaseName), metaStoreRelation.tableName, null, Seq.empty, Map(),carbonDataLoadSchema).run(sqlContext)
+       LoadCube(Some(metaStoreRelation.databaseName), metaStoreRelation.tableName, null, Seq.empty, Map(),Option[CarbonDataLoadSchema](carbonDataLoadSchema)).run(sqlContext)
        Seq.empty
      }
      /**

@@ -1661,7 +1661,7 @@ private[sql] case class LoadCube(
                                   factPathFromUser: String,
                                   dimFilesPath: Seq[DataLoadTableFileMapping],
                                   partionValues: Map[String, String],
-                                  dataLoadSchema:CarbonDataLoadSchema) extends RunnableCommand {
+                                  dataLoadSchema:Option[CarbonDataLoadSchema]) extends RunnableCommand {
 
   val LOGGER = LogServiceFactory.getLogService("org.apache.spark.sql.cubemodel.cubeSchema")
 
@@ -1705,13 +1705,11 @@ private[sql] case class LoadCube(
       carbonLoadModel.setAggTables(table.getAggregateTablesName.map(_.toString).toArray)
       carbonLoadModel.setTableName(table.getFactTableName)
 //      carbonLoadModel.setSchema(relation.cubeMeta.schema);
-      if(null==dataLoadSchema){
-      val dataLoadSchema = new CarbonDataLoadSchema(table)  
-      }
+      val schema:CarbonDataLoadSchema = dataLoadSchema.getOrElse(new CarbonDataLoadSchema(table))
       
     //Need to fill dimension relation
     //dataLoadSchema.setDimensionRelationList(x$1)
-      carbonLoadModel.setCarbonDataLoadSchema(dataLoadSchema)
+      carbonLoadModel.setCarbonDataLoadSchema(schema)
       var storeLocation = CarbonProperties.getInstance.getProperty(CarbonCommonConstants.STORE_LOCATION_TEMP_PATH, System.getProperty("java.io.tmpdir"))
       
 
