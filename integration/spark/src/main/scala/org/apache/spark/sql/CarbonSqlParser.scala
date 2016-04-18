@@ -375,7 +375,7 @@ class CarbonSqlDDLParser()
         }
         val patitionOptionsMap = partionDataOptions.toMap
         //patitionOptionsMap.toList.foreach(a => println("Key="+a._1+"  value="+a._2))
-        LoadCube(schema, cubename, filePath, dimFolderPath.getOrElse(Seq()), patitionOptionsMap)
+        LoadCube(schema, cubename, filePath, dimFolderPath.getOrElse(Seq()), patitionOptionsMap,null)
       }
     }
 
