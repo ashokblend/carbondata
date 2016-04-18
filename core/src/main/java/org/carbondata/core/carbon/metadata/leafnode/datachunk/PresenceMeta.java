@@ -19,11 +19,10 @@
 
 package org.carbondata.core.carbon.metadata.leafnode.datachunk;
 
-import java.util.BitSet;
-
+import org.roaringbitmap.RoaringBitmap;
 
 /**
- * information about presence of values in each row of the column chunk
+ * Class to handle space data with nulls
  */
 public class PresenceMeta {
 
@@ -35,7 +34,7 @@ public class PresenceMeta {
     /**
      * Compressed bit stream representing the presence of null values
      */
-    private BitSet bitSet;
+    private RoaringBitmap bitSet;
 
     /**
      * @return the representNullValues
@@ -54,14 +53,14 @@ public class PresenceMeta {
     /**
      * @return the bitSet
      */
-    public BitSet getBitSet() {
+    public RoaringBitmap getBitSet() {
         return bitSet;
     }
 
     /**
      * @param bitSet the bitSet to set
      */
-    public void setBitSet(BitSet bitSet) {
+    public void setBitSet(RoaringBitmap bitSet) {
         this.bitSet = bitSet;
     }
 }

@@ -21,7 +21,6 @@ package org.carbondata.core.carbon.metadata.schema;
 import java.io.Serializable;
 import java.util.List;
 
-
 /**
  * Persisting schema restructuring information;
  */

@@ -21,7 +21,6 @@ package org.carbondata.core.carbon.metadata.leafnode.compressor;
 
 import java.io.Serializable;
 
-
 /**
  *Represents the compression information of data of one dimension
  *one dimension group in one leaf node

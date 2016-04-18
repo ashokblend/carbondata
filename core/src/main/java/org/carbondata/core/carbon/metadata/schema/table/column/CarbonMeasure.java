@@ -18,6 +18,7 @@
  */
 package org.carbondata.core.carbon.metadata.schema.table.column;
 
+
 /**
  * class represent column(measure) in table
  */
@@ -34,6 +35,13 @@ public class CarbonMeasure extends CarbonDimension {
     private String aggregateFunction;
 
     /**
+     * minValue for this measure this is required to support distinct count query when 
+     * data type of is integer, and this is object as we are supporting different type of 
+     * data type like BigDecimal,long,double,etc.
+     */
+    private Object minValue;
+
+    /**
      * Used when this column contains decimal data.
      */
     private int scale;
@@ -42,6 +50,13 @@ public class CarbonMeasure extends CarbonDimension {
      * precision in decimal data
      */
     private int precision;
+
+    /**
+     * @param minValue the minValue to set
+     */
+    public void setMinValue(Object minValue) {
+        this.minValue = minValue;
+    }
 
     public CarbonMeasure(ColumnSchema columnSchema, int ordinal) {
         super(columnSchema, ordinal);
@@ -71,6 +86,13 @@ public class CarbonMeasure extends CarbonDimension {
     }
 
     /**
+     * @return the minValue
+     */
+    public Object getMinValue() {
+        return minValue;
+    }
+
+    /**
      * to check whether to dimension are equal or not
      */
     @Override public boolean equals(Object obj) {
@@ -80,10 +102,10 @@ public class CarbonMeasure extends CarbonDimension {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof CarbonMeasure)) {
+        if (!(obj instanceof CarbonDimension)) {
             return false;
         }
-        CarbonMeasure other = (CarbonMeasure) obj;
+        CarbonDimension other = (CarbonDimension) obj;
         if (columnSchema == null) {
             if (other.columnSchema != null) {
                 return false;

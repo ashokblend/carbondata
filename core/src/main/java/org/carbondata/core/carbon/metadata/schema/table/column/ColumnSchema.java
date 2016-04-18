@@ -309,17 +309,17 @@ public class ColumnSchema implements Serializable {
         this.dataType = dataType;
     }
 
-    /**
-     * @return the encoderList
-     */
-    public Set<Encoding> getEncodingList() {
-        return encodingList;
-    }
+	/**
+	 * @return the encoderList
+	 */
+	public Set<Encoding> getEncodingList() {
+		return encodingList;
+	}
 
-    /**
-     * @param encoderList the encoderList to set
-     */
-    public void setEncodintList(Set<Encoding> encodingList) {
-        this.encodingList = encodingList;
-    }
+	/**
+	 * @param encoderList the encoderList to set
+	 */
+	public void setEncodintList(Set<Encoding> encodingList) {
+		this.encodingList = encodingList;
+	}
 }

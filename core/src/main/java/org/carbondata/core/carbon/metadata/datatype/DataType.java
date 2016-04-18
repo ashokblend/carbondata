@@ -28,7 +28,5 @@ public enum DataType {
     TIMESTAMP,
     ARRAY,
     STRUCT,
-    MAP,
-    CUSTOM;
-    
+    MAP;
 }
