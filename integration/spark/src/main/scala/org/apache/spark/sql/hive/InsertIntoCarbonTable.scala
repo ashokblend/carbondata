@@ -44,7 +44,10 @@ import org.apache.spark.sql.catalyst.expressions.AttributeReference
   private[sql] case class InsertIntoCarbonTable(table: LogicalPlan,partition: Map[String, Option[String]],child:LogicalPlan,overwrite: Boolean,ifNotExists: Boolean,override val output: Seq[Attribute]) extends RunnableCommand {
     //fromTable#fromTableKeyColumn:destinationTable#String destionationTableKeyColumn~<begin again>
     var relationBuilder=new StringBuffer 
+    //alias name to original column name
     var alias2origNameMap:Map[String,String]=Map()
+    //partition related detail
+    var partitionOption:Map[String,String]=Map()
     override def run(sqlContext: SQLContext): Seq[Row] = {
        val metaStoreRelation = table.asInstanceOf[MetastoreRelation]
        
@@ -53,8 +56,21 @@ import org.apache.spark.sql.catalyst.expressions.AttributeReference
         
        fillTables(carbonDataLoadSchema,child)
        fillRelations(carbonDataLoadSchema)
-       LoadCube(Some(metaStoreRelation.databaseName), metaStoreRelation.tableName, null, Seq.empty, Map(),Option[CarbonDataLoadSchema](carbonDataLoadSchema)).run(sqlContext)
+       //start data loading
+       loadData(metaStoreRelation.databaseName,metaStoreRelation.tableName,carbonDataLoadSchema,sqlContext)
        Seq.empty
+     }
+     def loadData(databaseName:String,tableName:String,carbonDataLoadSchema:CarbonDataLoadSchema,sqlContext: SQLContext){
+       val tableListItr=carbonDataLoadSchema.getTableList.iterator()
+       var factTable:CarbonDataLoadSchema.Table=null
+       while(tableListItr.hasNext()){
+         val table=tableListItr.next()
+         if(table.isFact()){
+           factTable=table
+         }
+       }
+       LoadCube(Some(databaseName), tableName, factTable.getTableSource, Seq.empty, partitionOption,Option[CarbonDataLoadSchema](carbonDataLoadSchema)).run(sqlContext)
+       
      }
      /**
       * file CarbonDataLoadSchema with all tables used
@@ -63,6 +79,8 @@ import org.apache.spark.sql.catalyst.expressions.AttributeReference
        child match {
          case Project(projectList: Seq[NamedExpression], child: LogicalPlan) =>fillTables(carbonDataLoadSchema,child)
          case Join(left, right, joinType, condition) =>handleJoin(carbonDataLoadSchema,left,right,condition)
+         case MetastoreRelation(databaseName: String, tableName: String, alias: Option[String])=>
+              handleMetaStoreRelation(child.asInstanceOf[MetastoreRelation],carbonDataLoadSchema)
        }
        
      }
@@ -132,19 +150,41 @@ import org.apache.spark.sql.catalyst.expressions.AttributeReference
      def handleMetaStoreRelation(metaStoreRelation:MetastoreRelation,carbonDataLoadSchema:CarbonDataLoadSchema){
          val tableName=metaStoreRelation.tableName
          val tablePath=metaStoreRelation.table.properties.get("path").get
-         val alias = metaStoreRelation.alias.get
+         val alias = metaStoreRelation.alias.getOrElse(tableName)
+         val isHeader= metaStoreRelation.table.properties.get("header").getOrElse("true")
          var isFact:Boolean = false
+         val columns=new java.util.ArrayList[String]
+         metaStoreRelation.attributes.foreach { y => columns.add(y.name)}
          if(null!=alias){
            if(alias.equalsIgnoreCase("fact")){
              isFact=true
+             fillPartitionOption(metaStoreRelation,columns)
            }
            alias2origNameMap+=(alias ->tableName)
          }
-         val columns=new java.util.ArrayList[String]
-         metaStoreRelation.attributes.foreach { y => columns.add(y.name)}
          val table=new Table(tableName,tablePath,columns,isFact)
          
          carbonDataLoadSchema.addTable(table)
+     }
+     /**
+      * It will fill Partition options
+      */
+     def fillPartitionOption(metaStoreRelation:MetastoreRelation,columns:java.util.List[String]){
+       partitionOption+=("delimiter" -> metaStoreRelation.table.properties.getOrElse("delimiter", ","))
+       partitionOption+=("quotechar" -> metaStoreRelation.table.properties.getOrElse("quotechar", "\""))
+       val fileHeader:StringBuffer=new StringBuffer()
+       for(i <- 0 until columns.size()){
+         fileHeader.append(columns.get(i))
+         if(i<columns.size()-1){
+           fileHeader.append(partitionOption.get("delimiter").get)
+         }
+       }
+       partitionOption+=("fileheader" -> metaStoreRelation.table.properties.getOrElse("fileheader", fileHeader.toString()))
+       partitionOption+=("escapechar" -> metaStoreRelation.table.properties.getOrElse("escapechar", ""))
+       partitionOption+=("multiline" -> metaStoreRelation.table.properties.getOrElse("multiline", "false"))
+       partitionOption+=("complex_delimiter_level_1" -> metaStoreRelation.table.properties.getOrElse("complex_delimiter_level_1","\\$"))
+       partitionOption+=("complex_delimiter_level_2" -> metaStoreRelation.table.properties.getOrElse("complex_delimiter_level_2","\\:"))
+       
      }
      /**
       * This method takes care of relation
