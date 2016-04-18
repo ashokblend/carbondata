@@ -23,7 +23,7 @@ import org.apache.spark.sql.catalyst.ParserDialect
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.sql.execution.datasources.DDLException
-import org.apache.spark.sql.{CarbonSqlDDLParser, SQLContext, Strategy}
+import org.apache.spark.sql.{CarbonSqlParser, SQLContext, Strategy}
 
 /**
   * @author V71149
@@ -37,7 +37,7 @@ private[sql] object CarbonStrategy {
 private[spark] class CarbonSQLDialect extends HiveQLDialect {
 
   @transient
-  protected val sqlParser = new CarbonSqlDDLParser
+  protected val sqlParser = new CarbonSqlParser
 
   override def parse(sqlText: String): LogicalPlan = {
 

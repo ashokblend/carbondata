@@ -139,8 +139,8 @@ public class CarbonDataLoadSchema implements Serializable {
      * 
      * @param tableName - dimension table name
      * @param dimensionSource - source file path
-     * @param relation - fact foreign key with dimension primary key mapping
      * @param columns - list of columns to be used from this dimension table
+     * @param isFact - true if this table is fact table
      */
     public Table(String tableName, String tableSource,
         List<String> columns,boolean isFact) {

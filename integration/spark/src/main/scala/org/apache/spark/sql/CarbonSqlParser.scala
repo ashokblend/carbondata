@@ -31,12 +31,11 @@ import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.cubemodel._
 import org.apache.spark.Logging
 import org.apache.spark.sql.execution.datasources.{DDLException, DescribeCommand}
-import org.carbondata.core.carbon.CarbonDataLoadSchema
 
 /**
   * Parser for All Carbon DDL, DML cases in Unified context
   */
-class CarbonSqlDDLParser()
+class CarbonSqlParser()
   extends AbstractSparkSQLParser  with Logging {
 
   protected val AGGREGATE = Keyword("AGGREGATE")
@@ -376,7 +375,7 @@ class CarbonSqlDDLParser()
         }
         val patitionOptionsMap = partionDataOptions.toMap
         //patitionOptionsMap.toList.foreach(a => println("Key="+a._1+"  value="+a._2))
-        LoadCube(schema, cubename, filePath, dimFolderPath.getOrElse(Seq()), patitionOptionsMap,Option[CarbonDataLoadSchema](null))
+        LoadCube(schema, cubename, filePath, dimFolderPath.getOrElse(Seq()), patitionOptionsMap,None)
       }
     }
 

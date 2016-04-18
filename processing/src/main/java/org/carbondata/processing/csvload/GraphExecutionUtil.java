@@ -220,15 +220,7 @@ public final class GraphExecutionUtil {
 
             for (CarbonDimension dimension : dimensions) {
               String dimName = dimension.getColName();
-            	String foreignKey = null;
-            	CarbonTable:for(CarbonDataLoadSchema.Table table:schema.getTableList()){
-                for(String field:table.getColumns()){
-                  if(dimName.equals(field)){
-                    foreignKey=CarbonDataLoadUtil.getFactTableRelColName(schema, dimName);
-                    break CarbonTable;
-                  }
-                }
-               }
+            	String foreignKey  = CarbonDataLoadUtil.getFactTableRelColName(schema.getRelations(), dimName);
             	 if (null == foreignKey) {
                 	columnNames.add(dimension.getColName());
                 	} else {
@@ -256,6 +248,7 @@ public final class GraphExecutionUtil {
 
     }
 
+    
     /**
      * @param csvFilePath
      * @param columnNames

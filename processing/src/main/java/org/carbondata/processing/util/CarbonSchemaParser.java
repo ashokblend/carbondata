@@ -334,7 +334,7 @@ public final class CarbonSchemaParser {
             String primaryKey = null;
             for(String field:factTable.getColumns()){
               if(dimName.equals(field)){
-                primaryKey=CarbonDataLoadUtil.getDimensionTableRelColName(carbonDataLoadSchema, tableName);
+                primaryKey=CarbonDataLoadUtil.getDimensionTableRelColName(carbonDataLoadSchema.getRelations(), tableName);
               break;
             }
             }
@@ -406,7 +406,7 @@ public final class CarbonSchemaParser {
             String primaryKey = null;
             for(String field:factTable.getColumns()){
               if(dimName.equals(field)){
-                primaryKey=CarbonDataLoadUtil.getDimensionTableRelColName(carbonDataLoadSchema, tableName);
+                primaryKey=CarbonDataLoadUtil.getDimensionTableRelColName(carbonDataLoadSchema.getRelations(), tableName);
               break;
             }
             }
@@ -553,15 +553,8 @@ public final class CarbonSchemaParser {
     	int counter = 0;
         for (CarbonDimension cDim : dimensions) {
 
-        	String foreignKey = null;
-        	CarbonTable:for(CarbonDataLoadSchema.Table table:carbonDataLoadSchema.getTableList()){
-            for(String field:table.getColumns()){
-              if(cDim.getColName().equals(field)){
-                foreignKey=CarbonDataLoadUtil.getFactTableRelColName(carbonDataLoadSchema, field);
-                break CarbonTable;
-              }
-            }
-           }
+        	String foreignKey = CarbonDataLoadUtil.getFactTableRelColName(carbonDataLoadSchema.getRelations(), cDim.getColName());
+        	
             if (foreignKey != null) {
                 query.append(System.getProperty("line.separator"));
                 if (counter != 0) {
@@ -1932,16 +1925,7 @@ public final class CarbonSchemaParser {
     		CarbonDataLoadSchema carbonDataLoadSchema) {
     	Set<String> foreignKey = new LinkedHashSet<String>();
         for (CarbonDimension cDimension : dimensions) {
-            
-          CarbonTable:for(CarbonDataLoadSchema.Table table: carbonDataLoadSchema.getTableList()){
-            for(String field : table.getColumns()){
-              if(cDimension.getColName().equals(field)){
-                foreignKey.add(CarbonDataLoadUtil.getFactTableRelColName(carbonDataLoadSchema, field));
-                break CarbonTable;
-              }
-            }
-          }
-
+          foreignKey.add(CarbonDataLoadUtil.getFactTableRelColName(carbonDataLoadSchema.getRelations(), cDimension.getColName()));
         }
         return foreignKey.toArray(new String[foreignKey.size()]);
 
@@ -1966,19 +1950,11 @@ public final class CarbonSchemaParser {
             	continue;
             }
             
-            String foreignKey = null;
-            CarbonTable:for(CarbonDataLoadSchema.Table table:carbonDataLoadSchema.getTableList()){
-              for(String field:table.getColumns()){
-                if(dimName.equals(field)){
-                  foreignKey=CarbonDataLoadUtil.getFactTableRelColName(carbonDataLoadSchema, dimName);
-                  foreignKeyHierarchyString.append(foreignKey);
-                        foreignKeyHierarchyString.append(CarbonCommonConstants.COLON_SPC_CHARACTER);
-                        foreignKeyHierarchyString.append(dimName + '_' + dimTableName);
-                        foreignKeyHierarchyString.append(CarbonCommonConstants.AMPERSAND_SPC_CHARACTER);
-                  break CarbonTable;
-                }
-              }
-             }
+            String foreignKey = CarbonDataLoadUtil.getFactTableRelColName(carbonDataLoadSchema.getRelations(), dimName);
+            foreignKeyHierarchyString.append(foreignKey);
+            foreignKeyHierarchyString.append(CarbonCommonConstants.COLON_SPC_CHARACTER);
+            foreignKeyHierarchyString.append(dimName + '_' + dimTableName);
+            foreignKeyHierarchyString.append(CarbonCommonConstants.AMPERSAND_SPC_CHARACTER);
         }
         columns = foreignKeyHierarchyString.toString();
         if (columns.length() > 0 && columns
@@ -2037,14 +2013,7 @@ public final class CarbonSchemaParser {
             }
             else
             {
-              CarbonTable:for(CarbonDataLoadSchema.Table table: carbonDataLoadSchema.getTableList()){
-                for(String field:table.getColumns()){
-                  if(field.equals(dimName)){
-                    primaryKey=CarbonDataLoadUtil.getDimensionTableRelColName(carbonDataLoadSchema, dimTableName);
-                    break CarbonTable;
-                  }
-                }
-              }
+              primaryKey=CarbonDataLoadUtil.getDimensionTableRelColName(carbonDataLoadSchema.getRelations(), dimTableName);
             }
 
             primaryKeyStringbuffer.append(dimTableName + '_' + primaryKey);

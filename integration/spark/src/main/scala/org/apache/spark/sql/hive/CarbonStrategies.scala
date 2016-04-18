@@ -177,8 +177,8 @@ class CarbonStrategies(sqlContext: SQLContext) extends QueryPlanner[SparkPlan] {
           condition)
         condition.map(Filter(_, pushedDownJoin)).getOrElse(pushedDownJoin) :: Nil
  
-      case InsertIntoTable(table: LogicalPlan,partition: Map[String, Option[String]],child: LogicalPlan,overwrite: Boolean,ifNotExists: Boolean)=>
-             ExecutedCommand(InsertIntoCarbonTable(table,partition,child,overwrite,ifNotExists,plan.output))::Nil
+      case InsertIntoTable(l @ LogicalRelation(carbonDatasourceRelation: CarbonDatasourceRelation, _),partition: Map[String, Option[String]],child: LogicalPlan,overwrite: Boolean,ifNotExists: Boolean)=>
+       ExecutedCommand(InsertIntoCarbonTable(carbonDatasourceRelation,partition,child,overwrite,ifNotExists,plan.output))::Nil
      
       case QueryStatsLogicalPlan(child) =>
         QueryStatsSparkPlan(planLater(child)) :: Nil
