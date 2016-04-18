@@ -33,14 +33,11 @@ import java.util.Set;
 import org.carbondata.common.logging.LogService;
 import org.carbondata.common.logging.LogServiceFactory;
 import org.carbondata.core.carbon.CarbonDataLoadSchema;
-import org.carbondata.core.carbon.CarbonDataLoadSchema.DimensionRelation;
 import org.carbondata.core.carbon.CarbonDef.Cube;
 import org.carbondata.core.carbon.CarbonDef.CubeDimension;
 import org.carbondata.core.carbon.CarbonDef.Hierarchy;
 import org.carbondata.core.carbon.CarbonDef.Level;
-import org.carbondata.core.carbon.CarbonDef.RelationOrJoin;
 import org.carbondata.core.carbon.CarbonDef.Schema;
-import org.carbondata.core.carbon.CarbonDef.Table;
 import org.carbondata.core.carbon.metadata.schema.table.column.CarbonDimension;
 import org.carbondata.core.carbon.metadata.schema.table.column.CarbonMeasure;
 import org.carbondata.core.constants.CarbonCommonConstants;
@@ -50,7 +47,7 @@ import org.carbondata.core.datastorage.store.impl.FileFactory;
 import org.carbondata.core.datastorage.store.impl.FileFactory.FileType;
 import org.carbondata.core.util.CarbonUtil;
 import org.carbondata.processing.etl.DataLoadingException;
-import org.carbondata.processing.schema.metadata.AggregateTable;
+import org.carbondata.processing.util.CarbonDataLoadUtil;
 import org.carbondata.processing.util.CarbonDataProcessorLogEvent;
 import org.carbondata.processing.util.CarbonSchemaParser;
 import org.pentaho.di.trans.steps.textfileinput.TextFileInputField;
@@ -222,24 +219,17 @@ public final class GraphExecutionUtil {
         	List<CarbonDimension> dimensions = schema.getCarbonTable().getDimensionByTableName(factTableName);
 
             for (CarbonDimension dimension : dimensions) {
-            	
+              String dimName = dimension.getColName();
             	String foreignKey = null;
-            	for(DimensionRelation dimRel : schema.getDimensionRelationList())
-            	{
-            		for(String field : dimRel.getColumns())
-            		{
-            			if(dimension.equals(field))
-            			{
-            				foreignKey = dimRel.getRelation().getFactForeignKeyColumn();
-            				break;
-            			}
-            		}
-            		if(null != foreignKey)
-            		{
-            			break;
-            		}
-            	}
-                if (null == foreignKey) {
+            	CarbonTable:for(CarbonDataLoadSchema.Table table:schema.getTableList()){
+                for(String field:table.getColumns()){
+                  if(dimName.equals(field)){
+                    foreignKey=CarbonDataLoadUtil.getFactTableRelColName(schema, dimName);
+                    break CarbonTable;
+                  }
+                }
+               }
+            	 if (null == foreignKey) {
                 	columnNames.add(dimension.getColName());
                 	} else {
                         columnNames.add(foreignKey);
@@ -388,11 +378,11 @@ public final class GraphExecutionUtil {
     		CarbonDataLoadSchema schema) {
         Set<String> columnNames = new HashSet<String>(CarbonCommonConstants.DEFAULT_COLLECTION_SIZE);
 
-        for(DimensionRelation dimRel : schema.getDimensionRelationList())
+        for(CarbonDataLoadSchema.Table table : schema.getTableList())
         {
-        	if(dimRel.getTableName().equals(dimTableName))
+        	if(table.getTableName().equals(dimTableName))
         	{
-        		for(String field : dimRel.getColumns())
+        		for(String field : table.getColumns())
         		{
         			columnNames.add(field);
         		}

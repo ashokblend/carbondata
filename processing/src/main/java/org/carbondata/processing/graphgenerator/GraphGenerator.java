@@ -1674,7 +1674,7 @@ public class GraphGenerator {
                 CarbonSchemaParser.getLevelAndDataTypeMapString(dimensions, carbonDataLoadSchema));
 
         graphConfiguration.setForgienKeyAndPrimaryKeyMapString(CarbonSchemaParser
-                .getForeignKeyAndPrimaryKeyMapString(carbonDataLoadSchema.getDimensionRelationList()));
+                .getForeignKeyAndPrimaryKeyMapString(carbonDataLoadSchema.getTableList(),carbonDataLoadSchema.getRelations()));
 
         graphConfiguration.setMdkeySize(CarbonSchemaParser.getMdkeySizeForFact(dimensions));
         Set<String> measureColumn = new HashSet<String>(measures.size());

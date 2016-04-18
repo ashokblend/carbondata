@@ -42,10 +42,15 @@ public class CarbonDataLoadSchema implements Serializable {
   private CarbonTable carbonTable;
 
   /**
-   * dimension table and relation info
+   * dimension table 
    */
-  private List<DimensionRelation> dimensionRelationList;
-
+  private List<Table> tableList;
+  
+  /**
+   * relation between tables
+   */
+  private List<Relation> relations;
+  
   /**
    * CarbonDataLoadSchema constructor which takes CarbonTable
    * 
@@ -53,23 +58,40 @@ public class CarbonDataLoadSchema implements Serializable {
    */
   public CarbonDataLoadSchema(CarbonTable carbonTable) {
     this.carbonTable = carbonTable;
-    this.dimensionRelationList = new ArrayList<DimensionRelation>();
+    this.tableList = new ArrayList<Table>();
+    this.relations= new ArrayList<Relation>();
   }
 
   /**
-   * get dimension relation list
-   * @return dimensionRelationList
+   * get table relation list
+   * @return tableList
    */
-  public List<DimensionRelation> getDimensionRelationList() {
-    return dimensionRelationList;
+  public List<Table> getTableList() {
+    return tableList;
   }
-
+  
   /**
-   * set dimensionrelation list
-   * @param dimensionRelationList
+   * 
+   * @return relations
    */
-  public void setDimensionRelationList(List<DimensionRelation> dimensionRelationList) {
-    this.dimensionRelationList = dimensionRelationList;
+  public List<Relation> getRelations(){
+    return relations;
+  }
+  
+  /**
+   * add relation to list
+   * @param relation
+   */
+  public void addRelation(Relation relation){
+    this.relations.add(relation);
+  }
+  
+  /**
+   * add table to list
+   * @param table
+   */
+  public void addTable(Table table){
+    this.tableList.add(table);
   }
 
   /**
@@ -85,7 +107,7 @@ public class CarbonDataLoadSchema implements Serializable {
    * Load DML Command to support normalized cube data load
    *
    */
-  public static class DimensionRelation implements Serializable {
+  public static class Table implements Serializable {
     /**
      * default serializer
      */
@@ -97,14 +119,10 @@ public class CarbonDataLoadSchema implements Serializable {
     private String tableName;
 
     /**
-     * dimensionSource csv path
+     * tableSource csv path
      */
-    private String dimensionSource;
+    private String tableSource;
 
-    /**
-     * relation with fact and dimension table
-     */
-    private Relation relation;
 
     /**
      * Columns to selected from dimension table.
@@ -112,7 +130,10 @@ public class CarbonDataLoadSchema implements Serializable {
      * based on selected columns
      */
     private List<String> columns;
-
+    /**
+     * fact table identifier
+     */
+    private boolean isFact;
     /**
      * constructor
      * 
@@ -121,12 +142,12 @@ public class CarbonDataLoadSchema implements Serializable {
      * @param relation - fact foreign key with dimension primary key mapping
      * @param columns - list of columns to be used from this dimension table
      */
-    public DimensionRelation(String tableName, String dimensionSource, Relation relation,
-        List<String> columns) {
+    public Table(String tableName, String tableSource,
+        List<String> columns,boolean isFact) {
       this.tableName = tableName;
-      this.dimensionSource = dimensionSource;
-      this.relation = relation;
+      this.tableSource = tableSource;
       this.columns = columns;
+      this.isFact = isFact;
     }
 
     /**
@@ -137,17 +158,10 @@ public class CarbonDataLoadSchema implements Serializable {
     }
 
     /**
-     * @return dimensionSource
+     * @return tableSource
      */
-    public String getDimensionSource() {
-      return dimensionSource;
-    }
-
-    /**
-     * @return relation
-     */
-    public Relation getRelation() {
-      return relation;
+    public String getTableSource() {
+      return tableSource;
     }
 
     /**
@@ -156,52 +170,86 @@ public class CarbonDataLoadSchema implements Serializable {
     public List<String> getColumns() {
       return columns;
     }
+    /**
+     * 
+     * @return true if it is fact table
+     */
+    public boolean isFact() {
+      return isFact;
+    }
   }
 
   /**
-   * Relation class to specify fact foreignkey column with 
-   * dimension primary key column
+   * Relation class to specify relation between two table
    *
    */
-  public static class Relation implements Serializable {
+  public static class Relation implements Serializable
+  {
     /**
-     * default serializer
+     * 
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * Fact foreign key column
+     * from table name
      */
-    private String factForeignKeyColumn;
-
+    private String fromTable;
     /**
-     * dimension primary key column
+     * destination table name
      */
-    private String dimensionPrimaryKeyColumn;
-
+    private String destTable;
     /**
-     * constructor
+     * from table key column
+     */
+    private String fromTableKeyColumn;
+    /**
+     * destination table key column
+     */
+    private String destTableKeyColumn;
+    
+    /**
      * 
-     * @param factForeignKeyColumn - Fact Table Foreign key
-     * @param dimensionPrimaryKeyColumn - Dimension Table primary key
+     * @param fromTable
+     * @param fromTableKeyColumn
+     * @param destTable
+     * @param destTableKeyColumn
      */
-    public Relation(String factForeignKeyColumn, String dimensionPrimaryKeyColumn) {
-      this.factForeignKeyColumn = factForeignKeyColumn;
-      this.dimensionPrimaryKeyColumn = dimensionPrimaryKeyColumn;
+    public Relation(String fromTable,String fromTableKeyColumn,String destTable, String destTableKeyColumn){
+      this.fromTable=fromTable;
+      this.fromTableKeyColumn = fromTableKeyColumn;
+      this.destTable=destTable;
+      this.destTableKeyColumn = destTableKeyColumn;
     }
 
     /**
-     * @return factForeignKeyColumn
+     * 
+     * @return fromTable
      */
-    public String getFactForeignKeyColumn() {
-      return factForeignKeyColumn;
+    public String getFromTable() {
+      return fromTable;
     }
 
     /**
-     * @return dimensionPrimaryKeyColumn
+     * 
+     * @return destTable
      */
-    public String getDimensionPrimaryKeyColumn() {
-      return dimensionPrimaryKeyColumn;
+    public String getDestTable() {
+      return destTable;
+    }
+
+    /**
+     * 
+     * @return fromTableKeyColumn
+     */
+    public String getFromTableKeyColumn() {
+      return fromTableKeyColumn;
+    }
+    /**
+     * 
+     * @return destTableKeyColumn
+     */
+    public String getDestTableKeyColumn() {
+      return destTableKeyColumn;
     }
   }
 }

@@ -32,6 +32,7 @@ ShowLoads, SuggestAggregates}
 import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.sql.catalyst.plans.logical.Limit
 import org.apache.spark.sql.catalyst.plans.logical.Sort
+import org.apache.spark.sql.catalyst.plans.logical.InsertIntoTable
 import org.apache.spark.sql.catalyst.expressions.IntegerLiteral
 import org.apache.spark.sql.catalyst.expressions.SortOrder
 import org.apache.spark.sql.catalyst.expressions.Alias
@@ -175,7 +176,10 @@ class CarbonStrategies(sqlContext: SQLContext) extends QueryPlanner[SparkPlan] {
           carbon,
           condition)
         condition.map(Filter(_, pushedDownJoin)).getOrElse(pushedDownJoin) :: Nil
-
+ 
+      case InsertIntoTable(table: LogicalPlan,partition: Map[String, Option[String]],child: LogicalPlan,overwrite: Boolean,ifNotExists: Boolean)=>
+             ExecutedCommand(InsertIntoCarbonTable(table,partition,child,overwrite,ifNotExists,plan.output))::Nil
+     
       case QueryStatsLogicalPlan(child) =>
         QueryStatsSparkPlan(planLater(child)) :: Nil
       case ShowCubeCommand(schemaName) =>
