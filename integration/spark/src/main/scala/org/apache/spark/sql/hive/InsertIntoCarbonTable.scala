@@ -35,6 +35,7 @@ import org.apache.spark.sql.catalyst.expressions.Expression
 import org.apache.spark.sql.catalyst.expressions.EqualTo
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.CarbonDatasourceRelation
+import org.carbondata.processing.util.CarbonDataLoadUtil
 
 /**
  * It will analyse InsertIntoTable command and tries to get all tables and relations used in
@@ -52,6 +53,18 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
   var alias2origNameMap: Map[String, String] = Map()
   //partition related detail
   var partitionOption: Map[String, String] = Map()
+
+  val TABLE_SEPARTOR = ":"
+  val RELATION_SEPARATOR = "~"
+  val VALUE_SEPARATOR = "#"
+  val DELIMITER = "delimiter"
+  val QUOTECHAR = "quotechar"
+  val ESCAPECHAR = "escapechar"
+  val MULTILINE = "multiline"
+  val FILEHEADER = "fileheader"
+  val COMPLEX_DELIMITER_LEVEL1 = "complex_delimiter_level_1"
+  val COMPLEX_DELIMITER_LEVEL2 = "complex_delimiter_level_2"
+
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val tableName = carbonDatasourceRelation.carbonRelation.cubeName;
     val databaseName = carbonDatasourceRelation.carbonRelation.schemaName;
@@ -62,7 +75,9 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
     //read dimension and fact table from child and fill in schema
     fillTables(carbonDataLoadSchema, child)
     //fill relation between dimension and fact table
-    fillRelations(carbonDataLoadSchema)
+    if (relationBuilder.length() >= 0) {
+      fillRelations(carbonDataLoadSchema)
+    }
     //start data loading
     loadData(databaseName, tableName, carbonDataLoadSchema, sqlContext)
     Seq.empty
@@ -75,13 +90,8 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
                carbonDataLoadSchema: CarbonDataLoadSchema,
                sqlContext: SQLContext) {
     val tableListItr = carbonDataLoadSchema.getTableList.iterator()
-    var factTable: CarbonDataLoadSchema.Table = null
-    while (tableListItr.hasNext()) {
-      val table = tableListItr.next()
-      if (table.isFact()) {
-        factTable = table
-      }
-    }
+    var factTable: CarbonDataLoadSchema.Table = CarbonDataLoadUtil.
+                                                getFactTable(carbonDataLoadSchema)
     LoadCube(Some(databaseName), tableName, factTable.getTableSource,
       Seq.empty, partitionOption,
       Option[CarbonDataLoadSchema](carbonDataLoadSchema)).run(sqlContext)
@@ -106,13 +116,10 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
    * fill CarbonDataLoadSchema with all relations used between table
    */
   def fillRelations(carbonDataLoadSchema: CarbonDataLoadSchema) {
-    if (relationBuilder.length() == 0) {
-      return
-    }
-    relationBuilder.toString().split("~").foreach { x =>
-      val rel = x.split(":")
-      val from = rel(0).split("#")
-      val dest = rel(1).split("#")
+    relationBuilder.toString().split(RELATION_SEPARATOR).foreach { x =>
+      val rel = x.split(TABLE_SEPARTOR)
+      val from = rel(0).split(VALUE_SEPARATOR)
+      val dest = rel(1).split(VALUE_SEPARATOR)
       //resolving alias name
       val fromTableName = alias2origNameMap.get(from(0)).getOrElse(from(0))
       val fromColName = from(1)
@@ -177,13 +184,11 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
     var isFact: Boolean = false
     val columns = new java.util.ArrayList[String]
     metaStoreRelation.attributes.foreach { y => columns.add(y.name) }
-    if (null != alias) {
-      if (alias.equalsIgnoreCase("fact")) {
-        isFact = true
-        fillPartitionOption(metaStoreRelation, columns)
-      }
-      alias2origNameMap += (alias -> tableName)
+    if (alias.equalsIgnoreCase("fact")) {
+      isFact = true
+      fillPartitionOption(metaStoreRelation, columns)
     }
+    alias2origNameMap += (alias -> tableName)
     val table = new Table(tableName, tablePath, columns, isFact)
 
     carbonDataLoadSchema.addTable(table)
@@ -192,37 +197,34 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
    * It will fill Partition options
    */
   def fillPartitionOption(metaStoreRelation: MetastoreRelation, columns: java.util.List[String]) {
-    val delimiter = metaStoreRelation.table.properties.getOrElse("delimiter", ",")
-    val quoteChar = metaStoreRelation.table.properties.getOrElse("quotechar", "\"")
-    val escapeChar = metaStoreRelation.table.properties.getOrElse("escapechar", "")
-    val multiline = metaStoreRelation.table.properties.getOrElse("multiline", "false")
+    val delimiter = metaStoreRelation.table.properties.getOrElse(DELIMITER, ",")
+    val quoteChar = metaStoreRelation.table.properties.getOrElse(QUOTECHAR, "\"")
+    val escapeChar = metaStoreRelation.table.properties.getOrElse(ESCAPECHAR, "")
+    val multiline = metaStoreRelation.table.properties.getOrElse(MULTILINE, "false")
     val complexDelimiterLevel1 = metaStoreRelation.table.properties.
-      getOrElse("complex_delimiter_level_1", "\\$")
+      getOrElse(COMPLEX_DELIMITER_LEVEL1, "\\$")
     val complexDelimiterLevel2 = metaStoreRelation.table.properties.
-      getOrElse("complex_delimiter_level_2", "\\:")
-    partitionOption += ("delimiter" -> delimiter)
-    partitionOption += ("quotechar" -> quoteChar)
+      getOrElse(COMPLEX_DELIMITER_LEVEL2, "\\:")
+    partitionOption += (DELIMITER -> delimiter)
+    partitionOption += (QUOTECHAR -> quoteChar)
     val fileHeader: StringBuffer = new StringBuffer()
     for (i <- 0 until columns.size()) {
       fileHeader.append(columns.get(i))
       if (i < columns.size() - 1) {
-        fileHeader.append(partitionOption.get("delimiter").get)
+        fileHeader.append(partitionOption.get(DELIMITER).get)
       }
     }
-    partitionOption += ("fileheader" -> fileHeader.toString())
-    partitionOption += ("escapechar" -> escapeChar)
-    partitionOption += ("multiline" -> multiline)
-    partitionOption += ("complex_delimiter_level_1" -> complexDelimiterLevel1)
-    partitionOption += ("complex_delimiter_level_2" -> complexDelimiterLevel2)
+    partitionOption += (FILEHEADER -> fileHeader.toString())
+    partitionOption += (ESCAPECHAR -> escapeChar)
+    partitionOption += (MULTILINE -> multiline)
+    partitionOption += (COMPLEX_DELIMITER_LEVEL1 -> complexDelimiterLevel1)
+    partitionOption += (COMPLEX_DELIMITER_LEVEL2 -> complexDelimiterLevel2)
 
   }
   /**
    * This method takes care of relation
    */
   def handleCondition(expr: Expression) {
-    if (null == expr) {
-      return
-    }
     expr match {
       case EqualTo(left: Expression, right: Expression) =>
         handleEqualToExpression(left.asInstanceOf[AttributeReference],
@@ -235,11 +237,11 @@ private[sql] case class InsertIntoCarbonTable(carbonDatasourceRelation: CarbonDa
    */
   def handleEqualToExpression(left: AttributeReference, right: AttributeReference) {
     if (relationBuilder.length() > 0) {
-      relationBuilder.append("~")
+      relationBuilder.append(RELATION_SEPARATOR)
     }
-    relationBuilder.append(left.qualifiers(0)).append("#").append(left.name)
-      .append(":")
-      .append(right.qualifiers(0)).append("#").append(right.name)
+    relationBuilder.append(left.qualifiers(0)).append(VALUE_SEPARATOR).append(left.name)
+      .append(TABLE_SEPARTOR)
+      .append(right.qualifiers(0)).append(VALUE_SEPARATOR).append(right.name)
   }
 
 }
