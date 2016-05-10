@@ -23,70 +23,70 @@ import java.util.concurrent.Callable;
 import org.carbondata.core.datastorage.store.columnar.IndexStorage;
 
 /**
- * it is holder of row blocks data and also evaluate min max for row block data
+ * it is holder of column group data and also min max for colgroup block data
  */
 public class ColGroupBlockStorage implements IndexStorage, Callable<IndexStorage> {
 
-  private ColGroupDataHolder rowStoreDataHolder;
+  private ColGroupDataHolder colGrpDataHolder;
 
-  public ColGroupBlockStorage(DataHolder rowStoreDataHolder) {
-    this.rowStoreDataHolder = (ColGroupDataHolder) rowStoreDataHolder;
+  public ColGroupBlockStorage(DataHolder colGrpDataHolder) {
+    this.colGrpDataHolder = (ColGroupDataHolder) colGrpDataHolder;
   }
 
   /**
-   * sorting is not required for row block storage and hence return true
+   * sorting is not required for colgroup storage and hence return true
    */
   @Override public boolean isAlreadySorted() {
     return true;
   }
 
   /**
-   * for row block storage its not required
+   * for column group storage its not required
    */
   @Override public ColGroupDataHolder getDataAfterComp() {
-    //not required for Row store
+    //not required for column group storage
     return null;
   }
 
   /**
-   * for row block storage its not required
+   * for column group storage its not required
    */
   @Override public ColGroupDataHolder getIndexMap() {
-    // not required for row store
+    // not required for column group storage
     return null;
   }
 
   /**
-   * for row block storage its not required
+   * for column group storage its not required
    */
   @Override public byte[][] getKeyBlock() {
-    return rowStoreDataHolder.getData();
+    return colGrpDataHolder.getData();
   }
 
   /**
-   * for row block storage its not required
+   * for column group storage its not required
    */
   @Override public ColGroupDataHolder getDataIndexMap() {
-    //not required for row store
+    //not required for column group
     return null;
   }
 
   /**
-   * for row block storage its not required
+   * for column group storage its not required
    */
   @Override public int getTotalSize() {
-    return rowStoreDataHolder.getTotalSize();
+    return colGrpDataHolder.getTotalSize();
   }
 
   /**
-   * Get min max of row block store
+   * Get min max of column group storage
    */
   @Override public byte[] getMin() {
-    return rowStoreDataHolder.getMin();
+    return colGrpDataHolder.getMin();
   }
 
   @Override public byte[] getMax() {
-    return rowStoreDataHolder.getMax();
+    return colGrpDataHolder.getMax();
   }
 
   /**

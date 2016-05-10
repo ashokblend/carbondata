@@ -134,7 +134,7 @@ public class ColGroupMinMax {
       }
     } catch (KeyGenException e) {
       LOGGER.error(e,
-          "Key generation failed while evaulating row block min max");
+          "Key generation failed while evaulating column group min max");
     }
 
   }
