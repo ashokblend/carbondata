@@ -18,13 +18,12 @@
  */
 package org.carbondata.processing.store.colgroup;
 
-import org.carbondata.core.keygenerator.columnar.ColumnarSplitter;
 import org.carbondata.core.vo.ColumnGroupModel;
 
 /**
  * This will hold row store data.
  */
-public class RowStoreDataHolder implements DataHolder {
+public class ColGroupDataHolder implements DataHolder {
 
   private int noOfRecords;
 
@@ -36,7 +35,7 @@ public class RowStoreDataHolder implements DataHolder {
   /**
    * This will have min max value of each chunk
    */
-  private RowStoreMinMax rowStoreMinMax;
+  private ColGroupMinMax colGrpMinMax;
 
   /**
    * each row size of this row block
@@ -49,17 +48,16 @@ public class RowStoreDataHolder implements DataHolder {
    * @param colGroupId
    * @param noOfRecords
    */
-  public RowStoreDataHolder(ColumnGroupModel colGrpModel, ColumnarSplitter columnarSplitter,
-      int colGroupId, int noOfRecords) {
+  public ColGroupDataHolder(ColumnGroupModel colGrpModel, int keyBlockSize,
+       int noOfRecords,ColGroupMinMax colGrpMinMax) {
     this.noOfRecords = noOfRecords;
-    this.keyBlockSize = columnarSplitter.getBlockKeySize()[colGroupId];
-    this.rowStoreMinMax = new RowStoreMinMax(colGrpModel, columnarSplitter, colGroupId);
+    this.keyBlockSize = keyBlockSize;
+    this.colGrpMinMax = colGrpMinMax;
     rowStoreData = new byte[noOfRecords][];
   }
 
   @Override public void addData(byte[] rowsData, int rowIndex) {
     rowStoreData[rowIndex] = rowsData;
-    rowStoreMinMax.add(rowsData);
   }
 
   /**
@@ -68,7 +66,7 @@ public class RowStoreDataHolder implements DataHolder {
    * @return
    */
   public byte[] getMin() {
-    return rowStoreMinMax.getMin();
+    return colGrpMinMax.getMin();
   }
 
   /**
@@ -77,7 +75,7 @@ public class RowStoreDataHolder implements DataHolder {
    * @return
    */
   public byte[] getMax() {
-    return rowStoreMinMax.getMax();
+    return colGrpMinMax.getMax();
   }
 
   /**

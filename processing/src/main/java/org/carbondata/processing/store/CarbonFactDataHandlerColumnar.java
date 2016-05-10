@@ -66,10 +66,11 @@ import org.carbondata.processing.datatypes.GenericDataType;
 import org.carbondata.processing.groupby.CarbonAutoAggGroupBy;
 import org.carbondata.processing.groupby.CarbonAutoAggGroupByExtended;
 import org.carbondata.processing.groupby.exception.CarbonGroupByException;
+import org.carbondata.processing.store.colgroup.ColGroupBlockStorage;
+import org.carbondata.processing.store.colgroup.ColGroupDataHolder;
+import org.carbondata.processing.store.colgroup.ColGroupMinMax;
 import org.carbondata.processing.store.colgroup.ColumnDataHolder;
 import org.carbondata.processing.store.colgroup.DataHolder;
-import org.carbondata.processing.store.colgroup.RowBlockStorage;
-import org.carbondata.processing.store.colgroup.RowStoreDataHolder;
 import org.carbondata.processing.store.writer.CarbonFactDataWriter;
 import org.carbondata.processing.store.writer.CarbonFactDataWriterImplForIntIndexAndAggBlock;
 import org.carbondata.processing.store.writer.exception.CarbonDataWriterException;
@@ -267,6 +268,11 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
    * is of dictionary type or no dictionary time
    */
   private boolean[] dimensionType;
+
+  /**
+   * It holds min max value of columns of column group
+   */
+  private ColGroupMinMax[] colGrpMinMax;
 
   /**
    * CarbonFactDataHandler constructor
@@ -477,6 +483,8 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
     if (noDictionaryCount > 0 || complexIndexMap.size() > 0) {
       noDictionaryKey = (byte[]) row[this.mdKeyIndex - 1];
     }
+    //to evaluate min max value of columns in column group
+    evaluateColGrpMinMax(mdkey);
     ByteBuffer byteBuffer = null;
     byte[] b = null;
     if (this.entryCount == 0) {
@@ -549,6 +557,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
           StoreFactory.createDataStore(compressionModel).getWritableMeasureDataArray(dataHolder)
               .clone();
       initializeMinMax();
+      initializeColGrpMinMax();
       int entryCountLocal = entryCount;
       byte[] startKeyLocal = startKey;
       byte[] endKeyLocal = endKey;
@@ -573,6 +582,20 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       resetKeyBlockHolder();
       initialisedataHolder();
       keyDataHolder.reset();
+    }
+  }
+
+  /**
+   * Evaluate min max of columns in columnn group
+   *
+   * @param mdkey -> mdkey of data
+   */
+  private void evaluateColGrpMinMax(byte[] mdkey) {
+
+    for (int colGrp = 0; colGrp < colGrpModel.getColumnGroup().length; colGrp++) {
+      if (!colGrpModel.isColumnar(colGrp)) {
+        colGrpMinMax[colGrp].add(mdkey);
+      }
     }
   }
 
@@ -664,7 +687,8 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
               .submit(new BlockSortThread(i, dataHolders[dictionaryColumnCount].getData(), true)));
         } else {
           submit
-              .add(executorService.submit(new RowBlockStorage(dataHolders[dictionaryColumnCount])));
+              .add(executorService.submit(new ColGroupBlockStorage(
+                   dataHolders[dictionaryColumnCount])));
         }
       } else {
         submit.add(executorService.submit(
@@ -683,7 +707,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       LOGGER.error(e, e.getMessage());
     }
     IndexStorage[] blockStorage =
-        new IndexStorage[colGrpModel.getNoOfColumnStore() + noDictionaryCount + complexColCount];
+        new IndexStorage[submit.size()];
     try {
       for (int k = 0; k < blockStorage.length; k++) {
         blockStorage[k] = submit.get(k).get();
@@ -700,19 +724,18 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
 
   /**
    * DataHolder will have all row mdkey data
-   *
    * @param noOfColumn : no of column participated in mdkey
-   * @param noOfRow    : total no of row
+   * @param noOfRow : total no of row
    * @return : dataholder
    */
   private DataHolder[] getDataHolders(int noOfColumn, int noOfRow) {
     DataHolder[] dataHolders = new DataHolder[noOfColumn];
-    for (int i = 0; i < noOfColumn; i++) {
-      if (colGrpModel.isColumnar(i)) {
-        dataHolders[i] = new ColumnDataHolder(noOfRow);
+    for (int colGrp = 0; colGrp < noOfColumn; colGrp++) {
+      if (colGrpModel.isColumnar(colGrp)) {
+        dataHolders[colGrp] = new ColumnDataHolder(noOfRow);
       } else {
-        dataHolders[i] =
-            new RowStoreDataHolder(this.colGrpModel, this.columnarSplitter, i, noOfRow);
+        dataHolders[colGrp] = new ColGroupDataHolder(this.colGrpModel,
+            this.columnarSplitter.getBlockKeySize()[colGrp], noOfRow, colGrpMinMax[colGrp]);
       }
     }
     return dataHolders;
@@ -973,7 +996,21 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
     // initialize the channel;
     this.dataWriter.initializeWriter();
 
+    initializeColGrpMinMax();
     initializeMinMax();
+  }
+
+  /**
+   * initialize column group min max evaluator
+   */
+  private void initializeColGrpMinMax() {
+    int[][] colGrps = colGrpModel.getColumnGroup();
+    colGrpMinMax = new ColGroupMinMax[colGrps.length];
+    for (int colGrp = 0; colGrp < colGrps.length; colGrp++) {
+      if (!colGrpModel.isColumnar(colGrp)) {
+        colGrpMinMax[colGrp] = new ColGroupMinMax(colGrpModel, columnarSplitter, colGrp);
+      }
+    }
   }
 
   /**

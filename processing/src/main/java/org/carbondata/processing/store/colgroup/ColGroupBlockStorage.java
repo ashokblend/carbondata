@@ -25,12 +25,12 @@ import org.carbondata.core.datastorage.store.columnar.IndexStorage;
 /**
  * it is holder of row blocks data and also evaluate min max for row block data
  */
-public class RowBlockStorage implements IndexStorage, Callable<IndexStorage> {
+public class ColGroupBlockStorage implements IndexStorage, Callable<IndexStorage> {
 
-  private RowStoreDataHolder rowStoreDataHolder;
+  private ColGroupDataHolder rowStoreDataHolder;
 
-  public RowBlockStorage(DataHolder rowStoreDataHolder) {
-    this.rowStoreDataHolder = (RowStoreDataHolder) rowStoreDataHolder;
+  public ColGroupBlockStorage(DataHolder rowStoreDataHolder) {
+    this.rowStoreDataHolder = (ColGroupDataHolder) rowStoreDataHolder;
   }
 
   /**
@@ -43,7 +43,7 @@ public class RowBlockStorage implements IndexStorage, Callable<IndexStorage> {
   /**
    * for row block storage its not required
    */
-  @Override public RowStoreDataHolder getDataAfterComp() {
+  @Override public ColGroupDataHolder getDataAfterComp() {
     //not required for Row store
     return null;
   }
@@ -51,7 +51,7 @@ public class RowBlockStorage implements IndexStorage, Callable<IndexStorage> {
   /**
    * for row block storage its not required
    */
-  @Override public RowStoreDataHolder getIndexMap() {
+  @Override public ColGroupDataHolder getIndexMap() {
     // not required for row store
     return null;
   }
@@ -66,7 +66,7 @@ public class RowBlockStorage implements IndexStorage, Callable<IndexStorage> {
   /**
    * for row block storage its not required
    */
-  @Override public RowStoreDataHolder getDataIndexMap() {
+  @Override public ColGroupDataHolder getDataIndexMap() {
     //not required for row store
     return null;
   }
