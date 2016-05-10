@@ -21,16 +21,16 @@ package org.carbondata.processing.store.colgroup;
 import org.carbondata.core.vo.ColumnGroupModel;
 
 /**
- * This will hold row store data.
+ * This will hold column group data.
  */
 public class ColGroupDataHolder implements DataHolder {
 
   private int noOfRecords;
 
   /**
-   * rowsData[row no][data]
+   * colGrpData[row no][data]
    */
-  private byte[][] rowStoreData;
+  private byte[][] colGrpData;
 
   /**
    * This will have min max value of each chunk
@@ -38,7 +38,7 @@ public class ColGroupDataHolder implements DataHolder {
   private ColGroupMinMax colGrpMinMax;
 
   /**
-   * each row size of this row block
+   * each row size of this column group block
    */
   private int keyBlockSize;
 
@@ -53,11 +53,11 @@ public class ColGroupDataHolder implements DataHolder {
     this.noOfRecords = noOfRecords;
     this.keyBlockSize = keyBlockSize;
     this.colGrpMinMax = colGrpMinMax;
-    rowStoreData = new byte[noOfRecords][];
+    colGrpData = new byte[noOfRecords][];
   }
 
   @Override public void addData(byte[] rowsData, int rowIndex) {
-    rowStoreData[rowIndex] = rowsData;
+    colGrpData[rowIndex] = rowsData;
   }
 
   /**
@@ -79,7 +79,7 @@ public class ColGroupDataHolder implements DataHolder {
   }
 
   /**
-   * Return size of this row block
+   * Return size of this column group block
    *
    * @return
    */
@@ -88,7 +88,7 @@ public class ColGroupDataHolder implements DataHolder {
   }
 
   @Override public byte[][] getData() {
-    return rowStoreData;
+    return colGrpData;
   }
 
   /**
