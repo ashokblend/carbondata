@@ -391,6 +391,7 @@ class CubeNewProcessor(cm: tableModel, sqlContext: SQLContext) {
 
             if (eachCol.getColumnName.equalsIgnoreCase(row.trim)) {
                 eachCol.setColumnGroup(colGroupId)
+                eachCol.setColumnar(false)
             }
           })
         })
