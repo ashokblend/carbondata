@@ -231,7 +231,6 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
    */
   //    private boolean isDataWritingRequest;
 
-  private ExecutorService writerExecutorService;
   private Object lock = new Object();
   private CarbonWriteDataHolder keyDataHolder;
   private CarbonWriteDataHolder NoDictionarykeyDataHolder;
@@ -380,7 +379,6 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       QueryExecutorUtil.updateMaskedKeyRanges(maskedByte, maskedByteRanges);
     }
     LOGGER.info("Initializing writer executers");
-    writerExecutorService = Executors.newFixedThreadPool(1);
     //TODO need to pass carbon table identifier to metadata
     CarbonTable carbonTable =
         CarbonMetadata.getInstance().getCarbonTable(databaseName + '_' + tableName);
@@ -566,10 +564,15 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       byte[] endKeyLocal = endKey;
       startKey = new byte[mdkeyLength];
       endKey = new byte[mdkeyLength];
-      writerExecutorService.submit(
+      DataWriterThread dataWriterThread =
           new DataWriterThread(writableMeasureDataArray, byteArrayValues, entryCountLocal,
               startKeyLocal, endKeyLocal, compressionModel, noDictionaryValueHolder, noDictStartKey,
-              noDictEndKey));
+              noDictEndKey);
+      try {
+        dataWriterThread.call();
+      } catch (Exception e) {
+        LOGGER.error(e, e.getMessage());
+      }
       // set the entry count to zero
       processedDataCount += entryCount;
       LOGGER.info("*******************************************Number Of records processed: "
@@ -746,7 +749,6 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
     // / still some data is present in stores if entryCount is more
     // than 0
     if (this.entryCount > 0) {
-      closeWriterExecutionServiceService();
       byte[][] data = keyDataHolder.getByteArrayValues();
       calculateUniqueValue(min, uniqueValue);
       ValueCompressionModel compressionModel = ValueCompressionUtil
@@ -761,23 +763,10 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
           + processedDataCount);
       this.dataWriter.writeleafMetaDataToFile();
     } else if (null != this.dataWriter) {
-      closeWriterExecutionServiceService();
       this.dataWriter.writeleafMetaDataToFile();
     }
-    closeWriterExecutionServiceService();
   }
 
-  /**
-   * This method will close writer execution service
-   */
-  private void closeWriterExecutionServiceService() {
-    writerExecutorService.shutdown();
-    try {
-      writerExecutorService.awaitTermination(1, TimeUnit.DAYS);
-    } catch (InterruptedException e) {
-      LOGGER.error(e, e.getMessage());
-    }
-  }
 
   private byte[] getAggregateTableMdkey(byte[] maksedKey) throws CarbonDataWriterException {
     long[] keyArray = this.factKeyGenerator.getKeyArray(maksedKey, maskedByte);
@@ -1000,9 +989,14 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
     int[] blockKeySize = getBlockKeySizeWithComplexTypes(new MultiDimKeyVarLengthEquiSplitGenerator(
         CarbonUtil.getIncrementedCardinalityFullyFilled(completeDimLens.clone()), (byte) dimSet)
         .getBlockKeySize());
+    keyBlockSize = new int[dimensionType.length + complexColCount];
+    System.arraycopy(columnarSplitter.getBlockKeySize(), 0, keyBlockSize, 0, dimensionType.length);
+    System.arraycopy(blockKeySize, dimensionType.length, keyBlockSize, dimensionType.length,
+        blockKeySize.length - dimensionType.length);
+
     this.dataWriter =
         getFactDataWriter(this.storeLocation, this.measureCount, this.mdkeyLength, this.tableName,
-            true, fileManager, blockKeySize);
+            true, fileManager, keyBlockSize);
     this.dataWriter.setIsNoDictionary(isNoDictionary);
     // initialize the channel;
     this.dataWriter.initializeWriter();
