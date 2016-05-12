@@ -194,8 +194,9 @@ public class MultiDimKeyVarLengthVariableSplitGenerator extends MultiDimKeyVarLe
   @Override public int getKeySizeByBlock(int[] blockIndexes) {
     int size = 0;
     for (int i = 0; i < blockIndexes.length; i++) {
-      if (blockIndexes[i] < blockKeySize.length) {
-        size += blockKeySize[blockIndexes[i]];
+      int[] byteRange = byteRangesForKeys[blockIndexes[i]];
+      for (int j = byteRange[0]; j <= byteRange[1]; j++) {
+        size++;
       }
     }
     return size;

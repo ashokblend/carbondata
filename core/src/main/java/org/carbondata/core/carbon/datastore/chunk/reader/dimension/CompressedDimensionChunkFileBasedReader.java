@@ -120,7 +120,7 @@ public class CompressedDimensionChunkFileBasedReader extends AbstractChunkReader
     }
     // if no dictionary column then first create a no dictionary column chunk
     // and set to data chunk instance
-    if (!CarbonUtil
+    else if (!CarbonUtil
         .hasEncoding(dimensionColumnChunk.get(blockIndex).getEncodingList(), Encoding.DICTIONARY)) {
       columnDataChunk =
           new VariableLengthDimensionDataChunk(getNoDictionaryDataChunk(dataPage), chunkAttributes);

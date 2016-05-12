@@ -557,7 +557,6 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
           StoreFactory.createDataStore(compressionModel).getWritableMeasureDataArray(dataHolder)
               .clone();
       initializeMinMax();
-      initializeColGrpMinMax();
       int entryCountLocal = entryCount;
       byte[] startKeyLocal = startKey;
       byte[] endKeyLocal = endKey;
@@ -567,6 +566,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       DataWriterThread dataWriterThread =
           new DataWriterThread(writableMeasureDataArray, byteArrayValues, entryCountLocal,
               startKeyLocal, endKeyLocal, compressionModel, noDictionaryValueHolder, noDictStartKey,
+              noDictEndKey,this.colGrpMinMax));
               noDictEndKey);
       try {
         dataWriterThread.call();
@@ -602,7 +602,8 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
   private void writeDataToFile(byte[][] dataHolderLocal, byte[][] byteArrayValues,
       int entryCountLocal, byte[] startkeyLocal, byte[] endKeyLocal,
       ValueCompressionModel compressionModel, byte[][] noDictionaryData,
-      byte[] noDictionaryStartKey, byte[] noDictionaryEndKey) throws CarbonDataWriterException {
+      byte[] noDictionaryStartKey, byte[] noDictionaryEndKey,
+      ColGroupMinMax[] colGrpMinMax) throws CarbonDataWriterException {
     byte[][][] noDictionaryColumnsData = null;
     List<ArrayList<byte[]>> colsAndValues = new ArrayList<ArrayList<byte[]>>();
     int complexColCount = getComplexColsCount();
@@ -611,7 +612,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       colsAndValues.add(new ArrayList<byte[]>());
     }
     int noOfColumn = colGrpModel.getNoOfColumnStore();
-    DataHolder[] dataHolders = getDataHolders(noOfColumn, byteArrayValues.length);
+    DataHolder[] dataHolders = getDataHolders(noOfColumn, byteArrayValues.length, colGrpMinMax);
     for (int i = 0; i < byteArrayValues.length; i++) {
       byte[][] splitKey = columnarSplitter.splitKey(byteArrayValues[i]);
 
@@ -728,7 +729,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
    * @param noOfRow : total no of row
    * @return : dataholder
    */
-  private DataHolder[] getDataHolders(int noOfColumn, int noOfRow) {
+  private DataHolder[] getDataHolders(int noOfColumn, int noOfRow, ColGroupMinMax[] colGrpMinMax) {
     DataHolder[] dataHolders = new DataHolder[noOfColumn];
     for (int colGrp = 0; colGrp < noOfColumn; colGrp++) {
       if (colGrpModel.isColumnar(colGrp)) {
@@ -758,7 +759,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
           StoreFactory.createDataStore(compressionModel).getWritableMeasureDataArray(dataHolder);
       writeDataToFile(writableMeasureDataArray, data, entryCount, this.startKey, this.endKey,
           compressionModel, NoDictionarykeyDataHolder.getByteArrayValues(), this.noDictStartKey,
-          this.noDictEndKey);
+          this.noDictEndKey,this.colGrpMinMax);
       processedDataCount += entryCount;
       LOGGER.info("*******************************************Number Of records processed: "
           + processedDataCount);
@@ -989,9 +990,14 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
     int[] blockKeySize = getBlockKeySizeWithComplexTypes(new MultiDimKeyVarLengthEquiSplitGenerator(
         CarbonUtil.getIncrementedCardinalityFullyFilled(completeDimLens.clone()), (byte) dimSet)
         .getBlockKeySize());
+    keyBlockSize = new int[dimensionType.length + complexColCount];
+    System.arraycopy(columnarSplitter.getBlockKeySize(), 0, keyBlockSize, 0, dimensionType.length);
+    System.arraycopy(blockKeySize, dimensionType.length, keyBlockSize, dimensionType.length,
+        blockKeySize.length - dimensionType.length);
+
     this.dataWriter =
         getFactDataWriter(this.storeLocation, this.measureCount, this.mdkeyLength, this.tableName,
-            true, fileManager, blockKeySize);
+            true, fileManager, keyBlockSize);
     this.dataWriter.setIsNoDictionary(isNoDictionary);
     // initialize the channel;
     this.dataWriter.initializeWriter();
@@ -1146,9 +1152,12 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
 
     private ValueCompressionModel compressionModel;
 
+    private ColGroupMinMax[] colGrpMinMax;
+
     private DataWriterThread(byte[][] dataHolderLocal, byte[][] keyByteArrayValues,
         int entryCountLocal, byte[] startKey, byte[] endKey, ValueCompressionModel compressionModel,
-        byte[][] noDictionaryValueHolder, byte[] noDictStartKey, byte[] noDictEndKey) {
+        byte[][] noDictionaryValueHolder, byte[] noDictStartKey, byte[] noDictEndKey,
+        ColGroupMinMax[] colGrpMinMax) {
       this.keyByteArrayValues = keyByteArrayValues;
       this.entryCountLocal = entryCountLocal;
       this.startkeyLocal = startKey;
@@ -1158,12 +1167,13 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       this.noDictionaryValueHolder = noDictionaryValueHolder;
       this.noDictStartKeyLocal = noDictStartKey;
       this.noDictEndKeyLocal = noDictEndKey;
+      this.colGrpMinMax = colGrpMinMax;
     }
 
     @Override public IndexStorage call() throws Exception {
       writeDataToFile(dataHolderLocal, keyByteArrayValues, entryCountLocal, startkeyLocal,
           endKeyLocal, compressionModel, noDictionaryValueHolder, noDictStartKeyLocal,
-          noDictEndKeyLocal);
+          noDictEndKeyLocal,colGrpMinMax);
       return null;
     }
 

@@ -20,8 +20,10 @@ package org.carbondata.query.carbon.executor.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.carbondata.common.logging.LogService;
 import org.carbondata.common.logging.LogServiceFactory;
@@ -270,7 +272,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     if (null != queryModel.getFilterExpressionResolverTree()) {
       // loading the filter executer tree for filter evaluation
       blockExecutionInfo.setFilterExecuterTree(FilterUtil
-          .getFilterExecuterTree(queryModel.getFilterExpressionResolverTree(), blockKeyGenerator));
+          .getFilterExecuterTree(queryModel.getFilterExpressionResolverTree(), segmentProperties));
       startIndexKey = queryModel.getFilterExpressionResolverTree()
           .getstartKey(blockIndex.getSegmentProperties());
       endIndexKey = queryModel.getFilterExpressionResolverTree()
@@ -322,7 +324,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     blockExecutionInfo.setKeyStructureInfo(queryProperties.keyStructureInfo);
     // setting the size of fixed key column (dictionary column)
     blockExecutionInfo.setFixedLengthKeySize(getKeySize(updatedQueryDimension, segmentProperties));
-    List<Integer> dictionaryColumnBlockIndex = new ArrayList<Integer>();
+    Set<Integer> dictionaryColumnBlockIndex = new HashSet<Integer>();
     List<Integer> noDictionaryColumnBlockIndex = new ArrayList<Integer>();
     // get the block index to be read from file for query dimension
     // for both dictionary columns and no dictionary columns

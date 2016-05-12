@@ -161,12 +161,12 @@ public class ColGroupMinMax {
   }
 
   /**
-   * set max value of given column
+   * set min value of given column
    *
    * @param colData
    * @param column
    */
-  private void setMax(byte[] colData, int column) {
+  private void setMin(byte[] colData, int column) {
 
     if (null == min[column]) {
       min[column] = colData;
@@ -178,12 +178,12 @@ public class ColGroupMinMax {
   }
 
   /**
-   * set min value of given column
+   * set max value of given column
    *
    * @param colData
    * @param column
    */
-  private void setMin(byte[] colData, int column) {
+  private void setMax(byte[] colData, int column) {
     if (null == max[column]) {
       max[column] = colData;
     } else {
