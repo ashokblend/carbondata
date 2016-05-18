@@ -566,8 +566,7 @@ public class CarbonFactDataHandlerColumnar implements CarbonFactHandler {
       DataWriterThread dataWriterThread =
           new DataWriterThread(writableMeasureDataArray, byteArrayValues, entryCountLocal,
               startKeyLocal, endKeyLocal, compressionModel, noDictionaryValueHolder, noDictStartKey,
-              noDictEndKey,this.colGrpMinMax));
-              noDictEndKey);
+              noDictEndKey, this.colGrpMinMax);
       try {
         dataWriterThread.call();
       } catch (Exception e) {
